@@ -11,7 +11,7 @@
 .mtj.tmp/
 
 # IntelliJ
-.idea
+../.idea
 
 # Build files
 build
