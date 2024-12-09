@@ -1,10 +1,10 @@
 package com.example.antserver.presentation.dto.user
 
-import domain.user.UserRoleType
-import org.springframework.http.HttpHeaders
+import com.example.antserver.domain.user.UserRoleType
 
 data class UserAuthResult(
-    val headers: HttpHeaders,
+    val accessToken: String,
+    val refreshToken: String,
     val userName: String,
     val userEmail: String,
     val userRole: UserRoleType

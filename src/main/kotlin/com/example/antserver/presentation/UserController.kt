@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import com.example.antserver.presentation.dto.user.UserAuthRequest
 import com.example.antserver.presentation.dto.user.UserAuthResponse
+import com.example.antserver.presentation.dto.user.UserAuthResult
 import com.example.antserver.util.response.CommonResponse
 
 @RestController
@@ -14,29 +15,21 @@ class UserController(
 
 ) {
     /*
-    소셜 로그인(Refresh Token 만료 시)
-     1. Google Access Token 발급 및 사용자 이메일 일치 여부 확인
-     2. JWT로 Refresh Token 발급
-     3. HttpOnly 헤더에 Refresh Token 저장 후 클라이언트에게 응답
-     4. 메인 화면으로 Redirect
+    소셜 로그인
+     1. Google 소셜 로그인
+     2. JWT로 Access Token & Refresh Token 발급
     */
     @PostMapping("/auth")
     fun authenticate(
-        @RequestBody authRequest: UserAuthRequest
-        ): ResponseEntity<CommonResponse<UserAuthResponse>> {
-            val authorizationCode = authRequest.authorizationCode
-            val provider = authRequest.provider
+        @RequestBody userAuthRequest: UserAuthRequest
+    ): CommonResponse<UserAuthResult> {
+        val authorizationCode = userAuthRequest.authorizationCode
+        val provider = userAuthRequest.provider
 
-            val authResult = userService.authenticateUser(authorizationCode, provider)
-            val headers = authResult.headers
-            return ResponseEntity.ok()
-                .headers(headers)
-                .body(
-                    CommonResponse.success(
-                        data = UserAuthResponse(authResult.userName, authResult.userEmail, authResult.userRole)
-                    )
-                )
-        }
+        val userAuthResult = userService.authenticateUser(authorizationCode, provider)
+
+        return CommonResponse.success(userAuthResult)
+    }
 
     @PostMapping("/name")
     fun updateUserName() {
@@ -44,6 +37,7 @@ class UserController(
     }
 
     // user 정보 조회
+    @GetMapping("/self")
     fun findUser(userEmail: String) {
         TODO("Not yet implemented")
     }

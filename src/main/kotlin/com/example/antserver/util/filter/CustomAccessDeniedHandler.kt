@@ -14,6 +14,6 @@ class CustomAccessDeniedHandler: AccessDeniedHandler {
         response: HttpServletResponse?,
         accessDeniedException: AccessDeniedException?
     ) {
-        response?.sendError(HttpServletResponse.SC_FORBIDDEN) //403
+        response?.sendError(HttpServletResponse.SC_FORBIDDEN)
     }
 }

@@ -2,7 +2,7 @@ package com.example.antserver.util.response
 
 data class CommonResponse<T>(
     val data: T? = null,
-    val errorMessage: String? = null
+//    val errorMessage: String? = null
 ) {
     companion object {
         fun <T> success(data: T): CommonResponse<T> {
@@ -11,9 +11,9 @@ data class CommonResponse<T>(
             )
         }
 
-        fun <T> fail(errorMessage: String?): CommonResponse<T> {
+        fun <String> fail(errorMessage: String): CommonResponse<String> {
             return CommonResponse(
-                errorMessage = errorMessage
+                data = errorMessage
             )
         }
     }

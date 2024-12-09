@@ -1,17 +1,36 @@
 package com.example.antserver.domain.user
 
-import domain.user.UserRoleType
-import util.BaseEntity
+import com.example.antserver.util.BaseEntity
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.Id
+import jakarta.persistence.Table
 import java.time.Instant
 import java.util.UUID
 
+@Entity
+@Table(name = "users")
 data class User(
+    @Id
+    @Column(name = "id")
     val id: UUID = UUID.randomUUID(),
-    val name: String? = null,
+
+    @Column(name = "name")
+    val name: String,
+
+    @Column(name = "email")
     val email: String,
+
+    @Column(name = "provider")
     val provider: ProviderType,
+
+//    @Column(name = "providerId")
 //    val providerId: String,
+
+    @Column(name = "role")
     var role: UserRoleType,
+
+    @Column(name = "deletedAt")
     val deletedAt: Instant? = null
 ): BaseEntity() {
     fun registUser(user: User) {
@@ -32,11 +51,13 @@ data class User(
 
     companion object {
         fun of(
+            name: String,
             email: String,
             provider: ProviderType,
             role: UserRoleType
         ): User {
             return User(
+                name = name,
                 email = email,
                 provider = provider,
                 role = role,

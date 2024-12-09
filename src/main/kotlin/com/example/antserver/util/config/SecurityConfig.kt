@@ -1,5 +1,8 @@
-package util.config
+package com.example.antserver.util.config
 
+import com.example.antserver.util.filter.CustomAccessDeniedHandler
+import com.example.antserver.util.filter.CustomAuthenticationEntryPoint
+import com.example.antserver.util.filter.JwtAuthenticationFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
@@ -8,16 +11,13 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
-import util.filter.CustomAccessDeniedHandler
-import util.filter.CustomAuthenticationEntryPoint
-import util.filter.JwtAuthenticationFilter
 
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
-    private val jwtProvider: JwtProvider,
     private val customAuthenticationEntryPoint: CustomAuthenticationEntryPoint,
-    private val customAccessDeniedHandler: CustomAccessDeniedHandler
+    private val customAccessDeniedHandler: CustomAccessDeniedHandler,
+    private val jwtAuthenticationFilter: JwtAuthenticationFilter,
 ) {
     @Bean
     @Throws(Exception::class)
@@ -30,15 +30,14 @@ class SecurityConfig(
                 .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) } // Stateless 세션 설정
                 .authorizeHttpRequests { auth ->
                     auth.requestMatchers(HttpMethod.OPTIONS).permitAll() // CORS Preflight 방지
-                    auth.requestMatchers("/", "/h2-console/**", "/member/login/**").permitAll() // 공용 경로
+                    auth.requestMatchers("/", "/h2-console/**", "/health", "/users/auth").permitAll() // filtering 제외
                     auth.anyRequest().authenticated() // 그 외는 인증 필요
                 }
-                // JWT 토큰 예외 처리
                 .exceptionHandling { exceptions ->
                     exceptions.authenticationEntryPoint(customAuthenticationEntryPoint)
                     exceptions.accessDeniedHandler(customAccessDeniedHandler)
                 }
-                .addFilterBefore(JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter::class.java)
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
 
             return http.build()
         }

@@ -1,6 +1,6 @@
 package com.example.antserver.infrastructure.refreshtoken
 
-import com.example.antserver.domain.user.RefreshToken
+import com.example.antserver.domain.auth.RefreshToken
 import org.springframework.data.jpa.repository.JpaRepository
 import java.util.UUID
 

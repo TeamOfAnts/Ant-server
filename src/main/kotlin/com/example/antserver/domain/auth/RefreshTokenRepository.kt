@@ -1,4 +1,4 @@
-package com.example.antserver.domain.user
+package com.example.antserver.domain.auth
 
 import java.util.*
 

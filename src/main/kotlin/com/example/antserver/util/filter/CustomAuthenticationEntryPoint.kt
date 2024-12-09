@@ -13,6 +13,6 @@ class CustomAuthenticationEntryPoint: AuthenticationEntryPoint {
         response: HttpServletResponse?,
         authException: AuthenticationException?
     ) {
-        response?.sendError(HttpServletResponse.SC_UNAUTHORIZED) // 401
+        response?.sendError(HttpServletResponse.SC_UNAUTHORIZED)
     }
 }

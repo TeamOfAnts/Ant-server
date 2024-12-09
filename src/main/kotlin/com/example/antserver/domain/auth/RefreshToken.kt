@@ -1,16 +1,30 @@
-package com.example.antserver.domain.user
+package com.example.antserver.domain.auth
 
+import com.example.antserver.util.BaseEntity
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import util.BaseEntity
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.Id
+import jakarta.persistence.Table
 import java.util.Base64
 import java.util.UUID
 
+@Entity
+@Table(name = "refresh_token")
 data class RefreshToken(
+    @Id
+    @Column(name = "")
     val id: UUID,
+
+    @Column(name = "user_id")
     val userId: UUID,
+
+    @Column(name = "token")
     private var token: String,
+
+    @Column(name = "revoke")
     private var revoke: Boolean
 ): BaseEntity() {
 

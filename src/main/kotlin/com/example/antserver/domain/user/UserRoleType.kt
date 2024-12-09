@@ -1,4 +1,4 @@
-package domain.user
+package com.example.antserver.domain.user
 
 enum class UserRoleType {
     GUEST,

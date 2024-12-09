@@ -1,7 +1,11 @@
 package com.example.antserver.application
 
 import org.springframework.stereotype.Service
-import java.util.*
+
+import com.example.antserver.domain.user.ProviderType
+import com.example.antserver.domain.user.User
+import com.example.antserver.domain.user.UserRepository
+import com.example.antserver.presentation.dto.user.UserAuthResult
 
 @Service
 class UserService(
@@ -14,10 +18,11 @@ class UserService(
         // 구글 소셜 로그인을 통해 유저 인증
         val user = authService.authenticateThroughGoogle(authorizationCode, provider)
 
-        // 헤더 세팅
-        val header = authService.setTokenToHeader()
+        // token 발급
+        val accessToken = authService.generateAccessToken(user.id)
+        val refreshToken = authService.generateRefreshToken()
 
-        return UserAuthResult(header, user.name, user.email, user.role)
+        return UserAuthResult(accessToken, refreshToken, user.name, user.email, user.role)
     }
 
     // user 정보 조회

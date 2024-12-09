@@ -1,8 +1,7 @@
 package com.example.antserver.infrastructure.refreshtoken
 
-import com.example.antserver.domain.user.RefreshToken
-import com.example.antserver.domain.user.RefreshTokenRepository
-import com.example.antserver.infrastructure.refreshtoken.JpaRefreshTokenRepository
+import com.example.antserver.domain.auth.RefreshToken
+import com.example.antserver.domain.auth.RefreshTokenRepository
 import org.springframework.stereotype.Repository
 import java.util.*
 

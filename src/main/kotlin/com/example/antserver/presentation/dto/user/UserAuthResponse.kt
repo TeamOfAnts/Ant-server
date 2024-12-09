@@ -1,6 +1,6 @@
 package com.example.antserver.presentation.dto.user
 
-import domain.user.UserRoleType
+import com.example.antserver.domain.user.UserRoleType
 
 data class UserAuthResponse(
     val userName: String?,
