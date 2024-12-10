@@ -24,9 +24,11 @@ import java.util.*
 
 @Service
 class AuthService(
-    @Value("\${oauth.g과oogle.client-id}") private val clientId: String,
+    @Value("\${oauth.google.client-id}") private val clientId: String,
     @Value("\${oauth.google.client-secret}") private val clientSecret: String,
     @Value("\${oauth.google.redirect-uri}") private val redirectUri: String,
+    @Value("\${oauth.google.token-url}") private val tokenUrl: String,
+    @Value("\${oauth.google.userinfo-url}") private val userInfoUrl: String,
     @Value("\${jwt.secret}") val secretKey: String,
     @Value("\${jwt.expiration-time.access}") val accessTokenExpirationTime: Long,
     @Value("\${jwt.expiration-time.refresh}") val refreshTokenExpirationTime: Long,
@@ -69,17 +71,17 @@ class AuthService(
 //        )
 
         val accessTokenResponse = restTemplate.postForEntity(
-            "https://oauth2.googleapis.com/token",
+            tokenUrl,
             googleOAuthRequest,
             GoogleAccessTokenResponse::class.java
         )
 
-//        val accessToken = accessTokenResponse.body?.idToken
+//        val idToken = accessTokenResponse.body?.idToken
 //            ?: throw IllegalArgumentException("유효하지 않은 Authorization Code입니다.")
 //
-//        // accessToken으로 유저 정보 요청
+//        // idToken(Google Access Token)으로 유저 정보 요청
 //        val googleUserResponse = restTemplate.getForEntity(
-//            "https://oauth2.googleapis.com/tokeninfo?id_token=$accessToken",
+//            userInfoUrl.replace("{idToken}", idToken),
 //            GoogleUserResponse::class.java
 //        )
 //

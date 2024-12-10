@@ -19,6 +19,8 @@ oauth:
     client-id:
     client-secret:
     redirect-uri:
+    token-url: https://oauth2.googleapis.com/token
+    userinfo-url: https://oauth2.googleapis.com/tokeninfo?id_token={idToken}
 
 jwt:
   secret:
