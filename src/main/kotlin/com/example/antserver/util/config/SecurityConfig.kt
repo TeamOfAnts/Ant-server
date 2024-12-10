@@ -26,7 +26,7 @@ class SecurityConfig(
                 .httpBasic { it.disable() }
                 .formLogin { it.disable() }
                 .headers { it.frameOptions { frameOptions -> frameOptions.sameOrigin() } }
-                .cors { } // CORS 에러 방지용
+                .cors { } // CORS 에러 방지용 TODO.추가
                 .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) } // Stateless 세션 설정
                 .authorizeHttpRequests { auth ->
                     auth.requestMatchers(HttpMethod.OPTIONS).permitAll() // CORS Preflight 방지

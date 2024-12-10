@@ -14,14 +14,13 @@ class UserService(
     private val userRepository: UserRepository
 ) {
 
-    // 로그인
+    // user 인가
     fun authorizeUser(authorizationCode: String, provider: ProviderType): UserAuthResult {
         // 구글 소셜 로그인을 통해 유저 인증
         val user = authService.authenticateThroughGoogle(authorizationCode, provider)
 
         // token 발급
-//        val accessToken = authService.generateAccessToken(user.id)
-        val accessToken = authService.generateAccessToken(UUID.randomUUID())
+        val accessToken = authService.generateAccessToken(user.id)
 //        val refreshToken = authService.generateRefreshToken()
 
         return UserAuthResult(accessToken)

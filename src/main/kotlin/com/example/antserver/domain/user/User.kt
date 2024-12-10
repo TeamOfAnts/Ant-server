@@ -1,15 +1,12 @@
 package com.example.antserver.domain.user
 
 import com.example.antserver.util.BaseEntity
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.Id
-import jakarta.persistence.Table
+import jakarta.persistence.*
 import java.time.Instant
 import java.util.UUID
 
 @Entity
-@Table(name = "users")
+@Table(name = "`users`", uniqueConstraints = [UniqueConstraint(columnNames = ["email"])])
 data class User(
     @Id
     @Column(name = "id")
@@ -18,14 +15,14 @@ data class User(
     @Column(name = "name")
     val name: String,
 
-    @Column(name = "email")
+    @Column(name = "email", unique = true)
     val email: String,
 
     @Column(name = "provider")
     val provider: ProviderType,
 
-//    @Column(name = "providerId")
-//    val providerId: String,
+    @Column(name = "providerId")
+    val providerId: String,
 
     @Column(name = "role")
     var role: UserRoleType,
@@ -54,12 +51,14 @@ data class User(
             name: String,
             email: String,
             provider: ProviderType,
+            providerId: String,
             role: UserRoleType
         ): User {
             return User(
                 name = name,
                 email = email,
                 provider = provider,
+                providerId = providerId,
                 role = role,
             )
         }

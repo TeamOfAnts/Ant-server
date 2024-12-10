@@ -6,6 +6,6 @@ import java.util.*
 
 interface JpaUserRepository: JpaRepository<User, UUID> {
     fun save(user: User): User
-    fun findByEmail(email: String): User
+    fun findByEmail(email: String): User?
 //    fun findByProviderId(providerId: String): User
 }

@@ -13,8 +13,8 @@ class UserController(
 
 ) {
     /*
-    소셜 로그인
-     1. Google 소셜 로그인
+    유저 인가
+     1. Google 소셜 로그인을 통한 유저 인증
      2. JWT로 Access Token & Refresh Token 발급
     */
     @PostMapping("/auth")
@@ -27,7 +27,7 @@ class UserController(
         return CommonResponse.success(userAuthResult)
     }
 
-    @PostMapping("/name")
+    @PatchMapping("/name")
     fun updateUserName() {
         TODO("Not yet implemented")
     }
