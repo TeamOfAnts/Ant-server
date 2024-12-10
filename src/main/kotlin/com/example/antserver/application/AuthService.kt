@@ -24,9 +24,9 @@ import java.util.*
 
 @Service
 class AuthService(
-    @Value("\${auth.google.client-id}") private val clientId: String,
-    @Value("\${auth.google.client-secret}") private val clientSecret: String,
-    @Value("\${auth.google.redirect-uri}") private val redirectUri: String,
+    @Value("\${oauth.g과oogle.client-id}") private val clientId: String,
+    @Value("\${oauth.google.client-secret}") private val clientSecret: String,
+    @Value("\${oauth.google.redirect-uri}") private val redirectUri: String,
     @Value("\${jwt.secret}") val secretKey: String,
     @Value("\${jwt.expiration-time.access}") val accessTokenExpirationTime: Long,
     @Value("\${jwt.expiration-time.refresh}") val refreshTokenExpirationTime: Long,
