@@ -6,6 +6,7 @@ import com.example.antserver.domain.user.ProviderType
 import com.example.antserver.domain.user.User
 import com.example.antserver.domain.user.UserRepository
 import com.example.antserver.presentation.dto.user.UserAuthResult
+import java.util.*
 
 @Service
 class UserService(
@@ -14,15 +15,16 @@ class UserService(
 ) {
 
     // 로그인
-    fun authenticateUser(authorizationCode: String, provider: ProviderType): UserAuthResult {
+    fun authorizeUser(authorizationCode: String, provider: ProviderType): UserAuthResult {
         // 구글 소셜 로그인을 통해 유저 인증
         val user = authService.authenticateThroughGoogle(authorizationCode, provider)
 
         // token 발급
-        val accessToken = authService.generateAccessToken(user.id)
-        val refreshToken = authService.generateRefreshToken()
+//        val accessToken = authService.generateAccessToken(user.id)
+        val accessToken = authService.generateAccessToken(UUID.randomUUID())
+//        val refreshToken = authService.generateRefreshToken()
 
-        return UserAuthResult(accessToken, refreshToken, user.name, user.email, user.role)
+        return UserAuthResult(accessToken)
     }
 
     // user 정보 조회

@@ -1,10 +1,8 @@
 package com.example.antserver.presentation
 
 import com.example.antserver.application.UserService
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import com.example.antserver.presentation.dto.user.UserAuthRequest
-import com.example.antserver.presentation.dto.user.UserAuthResponse
 import com.example.antserver.presentation.dto.user.UserAuthResult
 import com.example.antserver.util.response.CommonResponse
 
@@ -20,14 +18,12 @@ class UserController(
      2. JWT로 Access Token & Refresh Token 발급
     */
     @PostMapping("/auth")
-    fun authenticate(
+    fun authorizeUser(
         @RequestBody userAuthRequest: UserAuthRequest
     ): CommonResponse<UserAuthResult> {
-        val authorizationCode = userAuthRequest.authorizationCode
-        val provider = userAuthRequest.provider
-
-        val userAuthResult = userService.authenticateUser(authorizationCode, provider)
-
+        println("Received Request: $userAuthRequest")
+        val (authorizationCode, provider ) = userAuthRequest
+        val userAuthResult = userService.authorizeUser(authorizationCode, provider)
         return CommonResponse.success(userAuthResult)
     }
 
