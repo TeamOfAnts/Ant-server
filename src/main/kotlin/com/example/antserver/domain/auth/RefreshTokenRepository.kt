@@ -3,5 +3,6 @@ package com.example.antserver.domain.auth
 import java.util.*
 
 interface RefreshTokenRepository {
-    fun findByUserId(userId: UUID): RefreshToken
+    fun save(refreshToken: RefreshToken): RefreshToken
+    fun findByUserId(userId: UUID): RefreshToken?
 }

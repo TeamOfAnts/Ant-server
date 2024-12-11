@@ -5,5 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository
 import java.util.UUID
 
 interface JpaRefreshTokenRepository: JpaRepository<RefreshToken, UUID> {
-    fun findByUserId(userId: UUID)
+    fun save(refreshToken: RefreshToken): RefreshToken
+    fun findByUserId(userId: UUID): RefreshToken?
 }

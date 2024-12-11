@@ -29,22 +29,21 @@ repositories {
 }
 
 dependencies {
+    // spring boot starter
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    // kotlin
     implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
     implementation 'org.jetbrains.kotlin:kotlin-reflect'
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0'
-
-    // google api client
-    implementation 'com.google.api-client:google-api-client:1.32.1'
-    // spring security
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    // oauth2 client
-//    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     // jwt
-//    implementation 'io.jsonwebtoken:jjwt:0.12.3'
     implementation 'com.auth0:java-jwt:4.2.1'
+    // database
     runtimeOnly 'com.mysql:mysql-connector-j'
+    // uuid
+    implementation 'com.github.f4b6a3:uuid-creator:5.2.0'
+    // test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.boot:spring-boot-testcontainers'
     testImplementation 'org.jetbrains.kotlin:kotlin-test-junit5'

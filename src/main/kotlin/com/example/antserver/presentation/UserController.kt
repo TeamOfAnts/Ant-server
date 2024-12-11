@@ -3,7 +3,7 @@ package com.example.antserver.presentation
 import com.example.antserver.application.UserService
 import org.springframework.web.bind.annotation.*
 import com.example.antserver.presentation.dto.user.UserAuthRequest
-import com.example.antserver.presentation.dto.user.UserAuthResult
+import com.example.antserver.presentation.dto.user.UserAuthResponse
 import com.example.antserver.util.response.CommonResponse
 
 @RestController
@@ -13,18 +13,17 @@ class UserController(
 
 ) {
     /*
-    유저 인가
+    유저 인증
      1. Google 소셜 로그인을 통한 유저 인증
-     2. JWT로 Access Token & Refresh Token 발급
+     2. 기존 유저가 아니라면 신규 등록
+     3. JWT로 Access Token & Refresh Token 발급
     */
     @PostMapping("/auth")
     fun authorizeUser(
         @RequestBody userAuthRequest: UserAuthRequest
-    ): CommonResponse<UserAuthResult> {
-        println("Received Request: $userAuthRequest")
-        val (authorizationCode, provider ) = userAuthRequest
-        val userAuthResult = userService.authorizeUser(authorizationCode, provider)
-        return CommonResponse.success(userAuthResult)
+    ): CommonResponse<UserAuthResponse> {
+        val userAuthResponse = userService.authenticateUser(userAuthRequest)
+        return CommonResponse.success(userAuthResponse)
     }
 
     @PatchMapping("/name")

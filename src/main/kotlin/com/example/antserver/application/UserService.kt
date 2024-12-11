@@ -1,12 +1,11 @@
 package com.example.antserver.application
 
 import org.springframework.stereotype.Service
-
-import com.example.antserver.domain.user.ProviderType
 import com.example.antserver.domain.user.User
 import com.example.antserver.domain.user.UserRepository
-import com.example.antserver.presentation.dto.user.UserAuthResult
-import java.util.*
+import com.example.antserver.presentation.dto.user.UserAuthRequest
+import com.example.antserver.presentation.dto.user.UserAuthResponse
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class UserService(
@@ -14,16 +13,20 @@ class UserService(
     private val userRepository: UserRepository
 ) {
 
-    // user 인가
-    fun authorizeUser(authorizationCode: String, provider: ProviderType): UserAuthResult {
+    @Transactional
+    fun authenticateUser(userAuthRequest: UserAuthRequest): UserAuthResponse {
         // 구글 소셜 로그인을 통해 유저 인증
-        val user = authService.authenticateThroughGoogle(authorizationCode, provider)
+        val googleUser = authService.authenticateThroughGoogle(userAuthRequest.authorizationCode)
+        val user = authService.authenticateByEmailOrRegister(googleUser, userAuthRequest.provider)
 
         // token 발급
         val accessToken = authService.generateAccessToken(user.id)
-//        val refreshToken = authService.generateRefreshToken()
+        val refreshToken = authService.generateRefreshToken()
 
-        return UserAuthResult(accessToken)
+        // refresh token 저장
+        authService.upsertRefreshToken(user.id, refreshToken)
+
+        return UserAuthResponse.of(accessToken, refreshToken)
     }
 
     // user 정보 조회

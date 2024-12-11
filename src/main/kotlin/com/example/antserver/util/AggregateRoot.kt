@@ -10,7 +10,7 @@ import java.time.Instant
 
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener::class)
-abstract class BaseEntity {
+abstract class AggregateRoot {
 
     @CreatedDate
     @Column(nullable = false, updatable = false)

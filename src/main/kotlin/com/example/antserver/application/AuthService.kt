@@ -2,21 +2,23 @@ package com.example.antserver.application
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import com.example.antserver.domain.auth.RefreshToken
 import com.example.antserver.domain.auth.RefreshTokenRepository
 import com.example.antserver.domain.user.ProviderType
 import com.example.antserver.domain.user.User
 import com.example.antserver.domain.user.UserRepository
 import com.example.antserver.domain.user.UserRoleType
-import com.example.antserver.presentation.dto.GoogleAccessTokenRequest
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
-import com.example.antserver.presentation.dto.GoogleAccessTokenResponse
-import com.example.antserver.presentation.dto.GoogleUserResponse
+import com.example.antserver.presentation.dto.user.GoogleTokenResponse
+import com.example.antserver.presentation.dto.user.GoogleUserResponse
 import org.springframework.http.HttpEntity
 import org.springframework.http.MediaType
+import org.springframework.util.LinkedMultiValueMap
+import org.springframework.web.util.UriComponentsBuilder
 import java.time.Instant
 import java.util.*
 
@@ -41,46 +43,46 @@ class AuthService(
         private const val USER_ID_CLAIM = "userId"
     }
 
-    fun isRefreshTokenRevoked(userId: UUID): Boolean {
-        val refreshToken = refreshTokenRepository.findByUserId(userId)
-        return refreshToken.isRevoked()
+    fun authenticateThroughGoogle(authorizationCode: String): GoogleUserResponse {
+        val googleJwtToken = fetchGoogleJwtToken(authorizationCode)
+        return fetchGoogleUser(googleJwtToken)
     }
 
-    fun authenticateThroughGoogle(authorizationCode: String, provider: ProviderType): User {
-        // authorizationCode로 Google JWT Token 요청
-        val restTemplate = RestTemplate()
+    fun fetchGoogleJwtToken(authorizationCode: String): String {
         val headers = HttpHeaders()
         headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
+        val googleTokenRequestParams = LinkedMultiValueMap<String, String>()
+        googleTokenRequestParams.add("code", authorizationCode)
+        googleTokenRequestParams.add("client_id", clientId)
+        googleTokenRequestParams.add("client_secret", clientSecret)
+        googleTokenRequestParams.add("redirect_uri", redirectUri)
+        googleTokenRequestParams.add("grant_type", "authorization_code")
+        val googleTokenRequestBody = UriComponentsBuilder.newInstance()
+            .queryParams(googleTokenRequestParams)
+            .build()
+            .query
+            .orEmpty()
 
-        val accessTokenRequestBody = GoogleAccessTokenRequest(
-            code = authorizationCode,
-            clientId = clientId,
-            clientSecret = clientSecret,
-            redirectUri = redirectUri,
-            grantType = "authorization_code",
-        ).encode()
-        val accessTokenRequest = HttpEntity<String>(accessTokenRequestBody, headers)
+        val googleTokenRequest = HttpEntity<String>(googleTokenRequestBody, headers)
 
-        val accessTokenResponse = restTemplate.postForEntity(
+        return RestTemplate().postForEntity(
             tokenUrl,
-            accessTokenRequest,
-            GoogleAccessTokenResponse::class.java
-        )
-
-        val idToken = accessTokenResponse.body?.idToken
+            googleTokenRequest,
+            GoogleTokenResponse::class.java
+        ).body?.idToken
             ?: throw IllegalArgumentException("유효하지 않은 Authorization Code입니다.")
+    }
 
-        // idToken(Google JWT Token)으로 유저 정보 요청
-        val googleUserResponse = restTemplate.getForEntity(
-            userInfoUrl.replace("{idToken}", idToken),
+    fun fetchGoogleUser(googleJwtToken: String): GoogleUserResponse {
+        return RestTemplate().getForEntity(
+            userInfoUrl.replace("{idToken}", googleJwtToken),
             GoogleUserResponse::class.java
-        )
-
-        val googleUser = googleUserResponse.body
+        ).body?.takeIf { it.emailVerified }
             ?: throw IllegalStateException("Google에서 사용자 정보를 가져올 수 없습니다.")
+    }
 
+    fun authenticateByEmailOrRegister(googleUser: GoogleUserResponse, provider: ProviderType): User {
         val email = googleUser.email
-
         return userRepository.findByEmail(email) ?: userRepository.save(
             User.of(
                 name = googleUser.name,
@@ -107,6 +109,13 @@ class AuthService(
             .withSubject(REFRESH_TOKEN_SUBJECT)
             .withExpiresAt(expirationTime)
             .sign(Algorithm.HMAC512(secretKey))
+    }
+
+    fun upsertRefreshToken(userId: UUID, newRefreshToken: String) {
+        val refreshToken = refreshTokenRepository.findByUserId(userId)
+            ?.apply { update(newRefreshToken) }
+            ?: RefreshToken.of(userId, newRefreshToken)
+            refreshTokenRepository.save(refreshToken)
     }
 
     fun parseClaims(accessToken: String): String? = runCatching {

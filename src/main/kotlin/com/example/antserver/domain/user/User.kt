@@ -1,16 +1,17 @@
 package com.example.antserver.domain.user
 
-import com.example.antserver.util.BaseEntity
+import com.example.antserver.util.AggregateRoot
+import com.github.f4b6a3.uuid.UuidCreator
 import jakarta.persistence.*
 import java.time.Instant
 import java.util.UUID
 
 @Entity
-@Table(name = "`users`", uniqueConstraints = [UniqueConstraint(columnNames = ["email"])])
+@Table(name = "`user`", uniqueConstraints = [UniqueConstraint(columnNames = ["email"])])
 data class User(
     @Id
     @Column(name = "id")
-    val id: UUID = UUID.randomUUID(),
+    val id: UUID = UuidCreator.getTimeOrderedEpoch(), // v6
 
     @Column(name = "name")
     val name: String,
@@ -19,18 +20,20 @@ data class User(
     val email: String,
 
     @Column(name = "provider")
+    @Enumerated(EnumType.STRING)
     val provider: ProviderType,
 
     @Column(name = "providerId")
     val providerId: String,
 
     @Column(name = "role")
+    @Enumerated(EnumType.STRING)
     var role: UserRoleType,
 
     @Column(name = "deletedAt")
     val deletedAt: Instant? = null
-): BaseEntity() {
-    fun registUser(user: User) {
+): AggregateRoot() {
+    fun registerUser(user: User) {
 
     }
 
