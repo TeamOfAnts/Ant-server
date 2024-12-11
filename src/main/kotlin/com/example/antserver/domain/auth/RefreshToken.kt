@@ -1,7 +1,6 @@
 package com.example.antserver.domain.auth
 
-import com.example.antserver.domain.user.User
-import com.example.antserver.util.AggregateRoot
+import com.example.antserver.infrastructure.AggregateRoot
 import com.github.f4b6a3.uuid.UuidCreator
 import jakarta.persistence.*
 import java.util.UUID
