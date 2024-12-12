@@ -14,7 +14,7 @@ data class User(
     val id: UUID = UuidCreator.getTimeOrderedEpoch(), // v6
 
     @Column(name = "name")
-    val name: String,
+    var name: String,
 
     @Column(name = "email", unique = true)
     val email: String,
@@ -33,12 +33,9 @@ data class User(
     @Column(name = "deletedAt")
     val deletedAt: Instant? = null
 ): AggregateRoot() {
-    fun registerUser(user: User) {
 
-    }
-
-    fun updateUser(user: User) {
-        TODO("Not yet implemented")
+    fun updateName(newName: String) {
+        this.name = newName
     }
 
     fun deleteUser(user: User) {

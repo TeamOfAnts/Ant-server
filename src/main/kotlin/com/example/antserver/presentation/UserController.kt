@@ -1,15 +1,19 @@
 package com.example.antserver.presentation
 
+import com.example.antserver.application.AuthService
 import com.example.antserver.application.UserService
 import org.springframework.web.bind.annotation.*
 import com.example.antserver.presentation.dto.user.UserAuthRequest
 import com.example.antserver.presentation.dto.user.UserAuthResponse
+import com.example.antserver.presentation.dto.user.UserDetailResponse
 import com.example.antserver.util.response.CommonResponse
+import java.util.*
 
 @RestController
 @RequestMapping("/users")
 class UserController(
-    private val userService: UserService
+    private val userService: UserService,
+    private val authService: AuthService
 
 ) {
     /*
@@ -26,15 +30,21 @@ class UserController(
         return CommonResponse.success(userAuthResponse)
     }
 
-    @PatchMapping("/name")
-    fun updateUserName() {
-        TODO("Not yet implemented")
+    @PatchMapping("/name/{name}")
+    fun updateUserName(
+        @RequestHeader("Authorization") accessToken: String,
+        @PathVariable name: String,
+    ): CommonResponse<String> {
+        val userId = UUID.fromString(authService.parseClaims(accessToken))
+        userService.updateUser(userId, name)
+        return CommonResponse.success("${name}님의 이름이 정상 등록되었습니다.")
     }
 
-    // user 정보 조회
     @GetMapping("/self")
-    fun findUser(userEmail: String) {
-        TODO("Not yet implemented")
+    fun getCurrentUser(@RequestHeader("Authorization") accessToken: String): CommonResponse<UserDetailResponse> {
+        val userId = UUID.fromString(authService.parseClaims(accessToken))
+        val user = userService.findUser(userId)
+        return CommonResponse.success(UserDetailResponse.from(user))
     }
 
     // user 정보 수정

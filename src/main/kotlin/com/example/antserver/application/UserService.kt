@@ -5,7 +5,9 @@ import com.example.antserver.domain.user.User
 import com.example.antserver.domain.user.UserRepository
 import com.example.antserver.presentation.dto.user.UserAuthRequest
 import com.example.antserver.presentation.dto.user.UserAuthResponse
+import com.example.antserver.util.exception.UserNotFoundException
 import org.springframework.transaction.annotation.Transactional
+import java.util.*
 
 @Service
 class UserService(
@@ -29,14 +31,17 @@ class UserService(
         return UserAuthResponse.of(accessToken, refreshToken)
     }
 
-    // user 정보 조회
-    fun findUser(email: String): User {
-        TODO("Not yet implemented")
+    @Transactional
+    fun updateUser(userId: UUID, newName: String): User {
+        val user = userRepository.findById(userId)
+            ?: throw UserNotFoundException("유저를 찾을 수 없습니다.")
+        user.updateName(newName)
+        return userRepository.save(user)
     }
 
-    // user 정보 수정
-    fun updateUser() {
-        TODO("Not yet implemented")
+    fun findUser(userId: UUID): User {
+        return userRepository.findById(userId)
+            ?: throw UserNotFoundException("유저를 찾을 수 없습니다.")
     }
 
     // user 삭제
