@@ -1,4 +1,4 @@
-package com.example.antserver.infrastructure
+package com.example.antserver.domain
 
 import jakarta.persistence.Column
 import jakarta.persistence.EntityListeners

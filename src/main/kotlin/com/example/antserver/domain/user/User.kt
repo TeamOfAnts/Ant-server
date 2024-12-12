@@ -1,6 +1,6 @@
 package com.example.antserver.domain.user
 
-import com.example.antserver.infrastructure.AggregateRoot
+import com.example.antserver.domain.AggregateRoot
 import com.github.f4b6a3.uuid.UuidCreator
 import jakarta.persistence.*
 import java.time.Instant
