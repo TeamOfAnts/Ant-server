@@ -16,6 +16,8 @@ import com.example.antserver.presentation.dto.user.GoogleTokenResponse
 import com.example.antserver.presentation.dto.user.GoogleUserResponse
 import com.example.antserver.util.config.GoogleOAuthProperties
 import com.example.antserver.util.config.JwtProperties
+import com.example.antserver.util.exception.AuthenticationException
+import com.example.antserver.util.exception.UserNotFoundException
 import org.springframework.http.HttpEntity
 import org.springframework.http.MediaType
 import org.springframework.util.LinkedMultiValueMap
@@ -65,7 +67,7 @@ class AuthService(
             googleTokenRequest,
             GoogleTokenResponse::class.java
         ).body?.idToken
-            ?: throw IllegalArgumentException("유효하지 않은 Authorization Code입니다.")
+            ?: throw AuthenticationException("유효하지 않은 Authorization Code입니다.")
     }
 
     fun fetchGoogleUser(googleJwtToken: String): GoogleUserResponse {
@@ -73,7 +75,7 @@ class AuthService(
             googleOAuthProperties.userInfoUrl.replace("{idToken}", googleJwtToken),
             GoogleUserResponse::class.java
         ).body?.takeIf { it.emailVerified }
-            ?: throw IllegalStateException("Google에서 사용자 정보를 가져올 수 없습니다.")
+            ?: throw UserNotFoundException("Google에서 유저 정보를 가져올 수 없습니다.")
     }
 
     fun authenticateByEmailOrRegister(googleUser: GoogleUserResponse, provider: ProviderType): User {
@@ -113,23 +115,27 @@ class AuthService(
             refreshTokenRepository.save(refreshToken)
     }
 
-    fun parseClaims(accessToken: String): String? = runCatching {
-        JWT.require(Algorithm.HMAC512(jwtProperties.secret))
+    fun parseClaims(accessToken: String): String {
+        return JWT.require(Algorithm.HMAC512(jwtProperties.secret))
             .build()
             .verify(accessToken)
             .getClaim(USER_ID_CLAIM)
             ?.asString()
-    }.getOrNull()
-
-    fun getAccessToken(request: HttpServletRequest): String? {
-        return request.getHeader(HttpHeaders.AUTHORIZATION)
-            ?.takeIf { it.startsWith(BEARER_PREFIX) }
-            ?.removePrefix(BEARER_PREFIX)
-            ?.trim()
+            ?: throw AuthenticationException("Access Token에서 userId 클레임을 추출할 수 없습니다.")
     }
 
-    fun getRefreshToken(request: HttpServletRequest): String? {
+    fun getAccessToken(request: HttpServletRequest): String {
+        val header = request.getHeader(HttpHeaders.AUTHORIZATION)
+            ?: throw AuthenticationException("Authorization 헤더가 없습니다.")
+        return header.takeIf { it.startsWith(BEARER_PREFIX) }
+            ?.removePrefix(BEARER_PREFIX)
+            ?.trim()
+            ?: throw AuthenticationException("Bearer <token> 형식이 맞지 않습니다.")
+    }
+
+    fun getRefreshToken(request: HttpServletRequest): String {
         return request.cookies
             ?.find { it.name == REFRESH_TOKEN_SUBJECT }?.value
+            ?: throw AuthenticationException("쿠키에서 Refresh Token이 누락되었습니다.")
     }
 }
