@@ -9,12 +9,13 @@ import com.example.antserver.domain.user.User
 import com.example.antserver.domain.user.UserRepository
 import com.example.antserver.domain.user.UserRoleType
 import jakarta.servlet.http.HttpServletRequest
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 import com.example.antserver.presentation.dto.user.GoogleTokenResponse
 import com.example.antserver.presentation.dto.user.GoogleUserResponse
+import com.example.antserver.util.config.GoogleOAuthProperties
+import com.example.antserver.util.config.JwtProperties
 import org.springframework.http.HttpEntity
 import org.springframework.http.MediaType
 import org.springframework.util.LinkedMultiValueMap
@@ -24,14 +25,8 @@ import java.util.*
 
 @Service
 class AuthService(
-    @Value("\${oauth.google.client-id}") private val clientId: String,
-    @Value("\${oauth.google.client-secret}") private val clientSecret: String,
-    @Value("\${oauth.google.redirect-uri}") private val redirectUri: String,
-    @Value("\${oauth.google.token-url}") private val tokenUrl: String,
-    @Value("\${oauth.google.userinfo-url}") private val userInfoUrl: String,
-    @Value("\${jwt.secret}") val secretKey: String,
-    @Value("\${jwt.expiration-time.access}") val accessTokenExpirationTime: Long,
-    @Value("\${jwt.expiration-time.refresh}") val refreshTokenExpirationTime: Long,
+    private val googleOAuthProperties: GoogleOAuthProperties,
+    private val jwtProperties: JwtProperties,
     private val userRepository: UserRepository,
     private val refreshTokenRepository: RefreshTokenRepository,
 ) {
@@ -53,9 +48,9 @@ class AuthService(
         headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
         val googleTokenRequestParams = LinkedMultiValueMap<String, String>()
         googleTokenRequestParams.add("code", authorizationCode)
-        googleTokenRequestParams.add("client_id", clientId)
-        googleTokenRequestParams.add("client_secret", clientSecret)
-        googleTokenRequestParams.add("redirect_uri", redirectUri)
+        googleTokenRequestParams.add("client_id", googleOAuthProperties.clientId)
+        googleTokenRequestParams.add("client_secret", googleOAuthProperties.clientSecret)
+        googleTokenRequestParams.add("redirect_uri", googleOAuthProperties.redirectUri)
         googleTokenRequestParams.add("grant_type", "authorization_code")
         val googleTokenRequestBody = UriComponentsBuilder.newInstance()
             .queryParams(googleTokenRequestParams)
@@ -66,7 +61,7 @@ class AuthService(
         val googleTokenRequest = HttpEntity<String>(googleTokenRequestBody, headers)
 
         return RestTemplate().postForEntity(
-            tokenUrl,
+            googleOAuthProperties.tokenUrl,
             googleTokenRequest,
             GoogleTokenResponse::class.java
         ).body?.idToken
@@ -75,7 +70,7 @@ class AuthService(
 
     fun fetchGoogleUser(googleJwtToken: String): GoogleUserResponse {
         return RestTemplate().getForEntity(
-            userInfoUrl.replace("{idToken}", googleJwtToken),
+            googleOAuthProperties.userInfoUrl.replace("{idToken}", googleJwtToken),
             GoogleUserResponse::class.java
         ).body?.takeIf { it.emailVerified }
             ?: throw IllegalStateException("Google에서 사용자 정보를 가져올 수 없습니다.")
@@ -95,20 +90,20 @@ class AuthService(
     }
 
     fun generateAccessToken(userId: UUID): String {
-        val expirationTime = Instant.now().plusMillis(accessTokenExpirationTime)
+        val expirationTime = Instant.now().plusMillis(jwtProperties.expirationTime.access)
         return JWT.create()
             .withSubject(ACCESS_TOKEN_SUBJECT)
             .withExpiresAt(expirationTime)
             .withClaim(USER_ID_CLAIM, userId.toString())
-            .sign(Algorithm.HMAC512(secretKey))
+            .sign(Algorithm.HMAC512(jwtProperties.secret))
     }
 
     fun generateRefreshToken(): String {
-        val expirationTime = Instant.now().plusMillis(refreshTokenExpirationTime)
+        val expirationTime = Instant.now().plusMillis(jwtProperties.expirationTime.refresh)
         return JWT.create()
             .withSubject(REFRESH_TOKEN_SUBJECT)
             .withExpiresAt(expirationTime)
-            .sign(Algorithm.HMAC512(secretKey))
+            .sign(Algorithm.HMAC512(jwtProperties.secret))
     }
 
     fun upsertRefreshToken(userId: UUID, newRefreshToken: String) {
@@ -119,7 +114,7 @@ class AuthService(
     }
 
     fun parseClaims(accessToken: String): String? = runCatching {
-        JWT.require(Algorithm.HMAC512(secretKey))
+        JWT.require(Algorithm.HMAC512(jwtProperties.secret))
             .build()
             .verify(accessToken)
             .getClaim(USER_ID_CLAIM)
@@ -135,6 +130,6 @@ class AuthService(
 
     fun getRefreshToken(request: HttpServletRequest): String? {
         return request.cookies
-            ?.find { it.name == "RefreshToken" }?.value
+            ?.find { it.name == REFRESH_TOKEN_SUBJECT }?.value
     }
 }
