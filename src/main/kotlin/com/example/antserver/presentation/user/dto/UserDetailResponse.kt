@@ -1,4 +1,4 @@
-package com.example.antserver.presentation.dto.user
+package com.example.antserver.presentation.user.dto
 
 import com.example.antserver.domain.user.ProviderType
 import com.example.antserver.domain.user.User
@@ -12,7 +12,7 @@ data class UserDetailResponse(
     private val role: UserRoleType,
 ) {
     companion object {
-        fun from(user: User): UserDetailResponse {
+        fun of(user: User): UserDetailResponse {
             return UserDetailResponse(
                 user.name,
                 user.email,

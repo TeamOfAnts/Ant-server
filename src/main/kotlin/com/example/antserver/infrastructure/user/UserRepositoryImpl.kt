@@ -16,11 +16,8 @@ class UserRepositoryImpl(
     override fun findById(userId: UUID): User? {
         return jpaUserRepository.findById(userId).orElse(null)
     }
+
     override fun findByEmail(email: String): User? {
         return jpaUserRepository.findByEmail(email)
     }
-
-//    override fun findByProviderId(providerId: String): User {
-//        TODO("Not yet implemented")
-//    }
 }

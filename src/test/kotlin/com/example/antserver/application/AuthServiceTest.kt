@@ -1,7 +1,8 @@
 package com.example.antserver.application
 
+import com.example.antserver.application.auth.AuthService
 import com.example.antserver.util.config.JwtProperties
-import com.github.f4b6a3.uuid.UuidCreator
+import com.fasterxml.uuid.Generators
 import io.mockk.every
 import io.mockk.mockk
 import jakarta.servlet.http.Cookie
@@ -14,7 +15,6 @@ import java.util.*
 
 class AuthServiceTest {
     private val authService = AuthService(
-        googleOAuthProperties = mockk(),
         jwtProperties = JwtProperties(
             secret = "secret_test",
             expirationTime = JwtProperties.ExpirationTime(
@@ -22,10 +22,9 @@ class AuthServiceTest {
                 refresh = 7779600000,
             )
         ),
-        userRepository = mockk(),
         refreshTokenRepository = mockk()
     )
-    private val userId = UuidCreator.getTimeOrderedEpoch()
+    private val userId = Generators.timeBasedEpochGenerator().generate()
     private val mockRequest = mockk<HttpServletRequest>()
 
     @Test

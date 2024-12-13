@@ -9,8 +9,8 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception::class)
     fun handleGenericException(e: Exception): CommonResponse<String> {
-        return CommonResponse.fail(
-            errorMessage = e.message ?: "예상하지 못 한 오류가 발생했습니다."
+        return CommonResponse(
+            data = e.message ?: "예상하지 못 한 오류가 발생했습니다."
         )
     }
 }

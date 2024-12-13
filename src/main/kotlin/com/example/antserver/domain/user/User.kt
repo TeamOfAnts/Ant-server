@@ -1,7 +1,7 @@
 package com.example.antserver.domain.user
 
 import com.example.antserver.domain.AggregateRoot
-import com.github.f4b6a3.uuid.UuidCreator
+import com.fasterxml.uuid.Generators
 import jakarta.persistence.*
 import java.time.Instant
 import java.util.UUID
@@ -11,7 +11,7 @@ import java.util.UUID
 data class User(
     @Id
     @Column(name = "id")
-    val id: UUID = UuidCreator.getTimeOrderedEpoch(), // v6
+    val id: UUID = Generators.timeBasedEpochGenerator().generate(), // v7
 
     @Column(name = "name")
     var name: String,
@@ -36,10 +36,6 @@ data class User(
 
     fun updateName(newName: String) {
         this.name = newName
-    }
-
-    fun deleteUser(user: User) {
-        TODO("Not yet implemented")
     }
 
     fun updateRole(newRole: UserRoleType) {

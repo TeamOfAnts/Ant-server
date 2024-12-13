@@ -1,4 +1,4 @@
-package com.example.antserver.presentation.dto.user
+package com.example.antserver.presentation.user.dto
 
 data class UserAuthResponse(
     val accessToken: String,

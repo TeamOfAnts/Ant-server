@@ -1,4 +1,4 @@
-package com.example.antserver.presentation.dto.user
+package com.example.antserver.presentation.user.dto
 
 import com.example.antserver.domain.user.ProviderType
 

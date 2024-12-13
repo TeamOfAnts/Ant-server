@@ -1,7 +1,7 @@
 package com.example.antserver.domain.auth
 
 import com.example.antserver.domain.AggregateRoot
-import com.github.f4b6a3.uuid.UuidCreator
+import com.fasterxml.uuid.Generators
 import jakarta.persistence.*
 import java.util.UUID
 
@@ -10,7 +10,7 @@ import java.util.UUID
 data class RefreshToken(
     @Id
     @Column(name = "id")
-    val id: UUID = UuidCreator.getTimeOrderedEpoch(), // v7
+    val id: UUID = Generators.timeBasedEpochGenerator().generate(), // v7
 
     @Column(name = "user_id")
     val userId: UUID,

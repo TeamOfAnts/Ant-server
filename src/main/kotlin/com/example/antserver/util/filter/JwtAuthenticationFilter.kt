@@ -7,7 +7,7 @@
 //import org.springframework.web.filter.OncePerRequestFilter
 //import java.util.*
 //
-//import com.example.antserver.application.AuthService
+//import com.example.antserver.application.auth.AuthService
 //import com.example.antserver.domain.auth.RefreshTokenRepository
 //import com.example.antserver.domain.user.UserRepository
 //import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
