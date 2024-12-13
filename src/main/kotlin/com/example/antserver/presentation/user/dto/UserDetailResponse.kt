@@ -5,11 +5,11 @@ import com.example.antserver.domain.user.User
 import com.example.antserver.domain.user.UserRoleType
 
 data class UserDetailResponse(
-    private val name: String,
-    private val email: String,
-    private val provider: ProviderType,
-    private val providerId: String,
-    private val role: UserRoleType,
+    val name: String,
+    val email: String,
+    val provider: ProviderType,
+    val providerId: String,
+    val role: UserRoleType,
 ) {
     companion object {
         fun of(user: User): UserDetailResponse {
