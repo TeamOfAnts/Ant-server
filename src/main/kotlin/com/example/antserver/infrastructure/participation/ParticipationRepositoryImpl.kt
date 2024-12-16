@@ -14,6 +14,10 @@ class ParticipationRepositoryImpl(
         return jpaParticipationRepository.save(participation)
     }
 
+    override fun saveAll(participations: List<Participation>): List<Participation> {
+        return jpaParticipationRepository.saveAll(participations)
+    }
+
     override fun findAllByUserId(userId: UUID): List<Participation> {
         return jpaParticipationRepository.findAllByUserId(userId)
     }
