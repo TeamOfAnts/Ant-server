@@ -1,5 +1,6 @@
 package com.example.antserver.application.participation
 
+import com.example.antserver.application.schedule.ScheduleStatusChangedEvent
 import com.example.antserver.domain.participation.Participation
 import com.example.antserver.domain.participation.ParticipationRepository
 import com.example.antserver.domain.participation.ParticipationType
@@ -18,12 +19,17 @@ class ParticipationService(
 
     @Transactional
     @EventListener
-    fun saveParticipation(userId: UUID, scheduleId: Long, participationType: ParticipationType): Participation {
-        val participation = Participation.of(
-            userId,
-            scheduleId,
-            participationType
-        )
-        return participationRepository.save(participation)
+    fun saveParticipation(event: ScheduleStatusChangedEvent): List<Participation> {
+        val participations = event.confirmedScheduleVoters.flatMap { (scheduleId, userIds) ->
+            userIds.map { userId ->
+                Participation.of(
+                    scheduleId = scheduleId,
+                    userId = userId,
+                    participationType = ParticipationType.STUDY
+                )
+            }
+        }
+
+        return participationRepository.saveAll(participations)
     }
 }
