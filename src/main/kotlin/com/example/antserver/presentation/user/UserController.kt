@@ -25,15 +25,15 @@ class UserController(
         return CommonResponse(userAuthResponse)
     }
 
-    @PatchMapping("/name/{name}")
+    @PatchMapping("/name")
     fun updateUserName(
         request: HttpServletRequest,
-        @PathVariable name: String,
+        @RequestBody userNameRequest: UserNameRequest,
     ): CommonResponse<String> {
         val accessToken = authService.getAccessToken(request)
         val userId = UUID.fromString(authService.parseClaims(accessToken))
-        userService.updateUser(userId, name)
-        return CommonResponse("${name}님의 이름이 정상 등록되었습니다.")
+        userService.updateUser(userId, userNameRequest.name)
+        return CommonResponse("${userNameRequest.name}님의 이름이 정상 등록되었습니다.")
     }
 
     @GetMapping("/self")
