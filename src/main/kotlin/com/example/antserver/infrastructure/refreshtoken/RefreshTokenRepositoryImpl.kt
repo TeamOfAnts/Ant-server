@@ -9,10 +9,16 @@ import java.util.*
 class RefreshTokenRepositoryImpl(
     private val jpaRefreshTokenRepository: JpaRefreshTokenRepository
 ): RefreshTokenRepository {
+
     override fun save(refreshToken: RefreshToken): RefreshToken {
         return jpaRefreshTokenRepository.save(refreshToken)
     }
+
     override fun findByUserId(userId: UUID): RefreshToken? {
         return jpaRefreshTokenRepository.findByUserId(userId)
+    }
+
+    override fun findByToken(token: String): RefreshToken? {
+        return jpaRefreshTokenRepository.findByToken(token)
     }
 }

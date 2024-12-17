@@ -25,7 +25,13 @@ class AuthService(
         private const val USER_ID_CLAIM = "userId"
     }
 
-    fun generateAccessToken(userId: UUID): String {
+    fun isTokenValid(token: String): Boolean = runCatching {
+        val algorithm = Algorithm.HMAC512(jwtProperties.secret)
+        JWT.require(algorithm).build().verify(token)
+        true
+    }.getOrElse { false }
+
+    fun createAccessToken(userId: UUID): String {
         val expirationTime = Instant.now().plusMillis(jwtProperties.expirationTime.access)
         return JWT.create()
             .withSubject(ACCESS_TOKEN_SUBJECT)
@@ -34,7 +40,7 @@ class AuthService(
             .sign(Algorithm.HMAC512(jwtProperties.secret))
     }
 
-    fun generateRefreshToken(): String {
+    fun createRefreshToken(): String {
         val expirationTime = Instant.now().plusMillis(jwtProperties.expirationTime.refresh)
         return JWT.create()
             .withSubject(REFRESH_TOKEN_SUBJECT)
@@ -42,17 +48,33 @@ class AuthService(
             .sign(Algorithm.HMAC512(jwtProperties.secret))
     }
 
+    fun renewAccessToken(userId: UUID, refreshToken: String): String {
+        assert(isTokenValid(refreshToken)) {
+            throw AuthenticationException("Refresh Token이 만료되었습니다. 다시 로그인을 진행해주세요")
+        }
+        refreshTokenRepository.findByToken(refreshToken)
+            ?: throw AuthenticationException("존재하지 않는 Refresh Token입니다.")
+        return createAccessToken(userId)
+    }
+
     fun renewRefreshToken(userId: UUID, newRefreshToken: String) {
         val refreshToken = refreshTokenRepository.findByUserId(userId)
             ?.apply { update(newRefreshToken) }
             ?: RefreshToken.of(userId, newRefreshToken)
-            refreshTokenRepository.save(refreshToken)
+        refreshTokenRepository.save(refreshToken)
     }
 
     fun parseClaims(accessToken: String): String {
         return JWT.require(Algorithm.HMAC512(jwtProperties.secret))
             .build()
             .verify(accessToken)
+            .getClaim(USER_ID_CLAIM)
+            ?.asString()
+            ?: throw AuthenticationException("Access Token에서 userId 클레임을 추출할 수 없습니다.")
+    }
+
+    fun parseClaimsWithoutVerify(accessToken: String): String {
+        return JWT.decode(accessToken)
             .getClaim(USER_ID_CLAIM)
             ?.asString()
             ?: throw AuthenticationException("Access Token에서 userId 클레임을 추출할 수 없습니다.")
@@ -65,11 +87,5 @@ class AuthService(
             ?.removePrefix(BEARER_PREFIX)
             ?.trim()
             ?: throw AuthenticationException("Bearer <token> 형식이 맞지 않습니다.")
-    }
-
-    fun getRefreshToken(request: HttpServletRequest): String {
-        return request.cookies
-            ?.find { it.name == REFRESH_TOKEN_SUBJECT }?.value
-            ?: throw AuthenticationException("쿠키에서 Refresh Token이 누락되었습니다.")
     }
 }

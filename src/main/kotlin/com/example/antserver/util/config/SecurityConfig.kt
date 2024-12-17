@@ -30,7 +30,7 @@ class SecurityConfig(
                 .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) } // Stateless 세션 설정
                 .authorizeHttpRequests { auth ->
                     auth.requestMatchers(HttpMethod.OPTIONS).permitAll() // CORS Preflight 방지
-                    auth.requestMatchers("/", "/h2-console/**", "/health", "/users/auth", "/users/self", "/users/name/*").permitAll() // filtering 제외 TODO. JwtAuthenticationFilter 수정 후 "/users/self", "/users/name/*" 삭제
+                    auth.requestMatchers("/", "/h2-console/**", "/health", "/users/auth", "/users/self", "/users/name/*", "/auth/refresh").permitAll() // filtering 제외 TODO. JwtAuthenticationFilter 수정 후 "/users/self", "/users/name/*" 삭제
                     auth.anyRequest().authenticated() // 그 외는 인증 필요
                 }
                 .exceptionHandling { exceptions ->
