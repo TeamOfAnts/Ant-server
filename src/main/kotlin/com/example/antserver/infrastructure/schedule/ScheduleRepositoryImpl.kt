@@ -2,6 +2,7 @@ package com.example.antserver.infrastructure.schedule
 
 import com.example.antserver.domain.schedule.Schedule
 import com.example.antserver.domain.schedule.ScheduleRepository
+import com.example.antserver.util.exception.EmptyResultException
 import org.springframework.stereotype.Repository
 
 @Repository
@@ -15,6 +16,10 @@ class ScheduleRepositoryImpl(
 
     override fun saveAll(schedules: List<Schedule>): List<Schedule> {
         return jpaScheduleRepository.saveAll(schedules)
+    }
+
+    override fun findAllById(ids: List<Long>): List<Schedule> {
+        return jpaScheduleRepository.findAllById(ids)
     }
 
     override fun findAllByPollId(pollId: Long): List<Schedule> {

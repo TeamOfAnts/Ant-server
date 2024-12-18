@@ -18,7 +18,6 @@ class ScheduleService(
     private val scheduleRepository: ScheduleRepository,
     private val applicationEventPublisher: ApplicationEventPublisher,
     ) {
-    val scheduleVoters = mutableMapOf<Long, MutableSet<UUID>>()
 
     @EventListener
     @Transactional
@@ -35,38 +34,31 @@ class ScheduleService(
         return scheduleRepository.saveAll(schedules)
     }
 
+    @Transactional
+    fun updateScheduleStatus(pollId: Long) {
+        val schedules = scheduleRepository.findAllByPollId(pollId)
+
+        val updatedSchedules = schedules.map { schedule ->
+            val newStatus = if (schedule.voters.size >= 3) ScheduleStatus.CONFIRMED else ScheduleStatus.DROPPED
+            schedule.copy(scheduleStatus = newStatus)
+        }
+
+        scheduleRepository.saveAll(updatedSchedules)
+        applicationEventPublisher.publishEvent(ScheduleStatusChangedEvent.from(updatedSchedules))
+    }
+
     fun findSchedulesByPollId(pollId: Long): List<Schedule> {
         return scheduleRepository.findAllByPollId(pollId)
             .takeIf { it.isNotEmpty() } ?: throw EmptyResultException("{$pollId}번 투표에 대한 스케쥴이 없습니다.")
     }
 
     @Transactional
-    fun voteSchedules(userId: UUID, scheduleIds: List<Long>): Map<Long, Int> {
-        scheduleIds.forEach { scheduleId ->
-            val votes = scheduleVoters.getOrPut(scheduleId) { mutableSetOf() }
-            votes.add(userId)
+    fun voteSchedules(userId: UUID, scheduleIds: List<Long>): List<Schedule> {
+        val schedules = scheduleRepository.findAllById(scheduleIds)
+        schedules.forEach { schedule ->
+            schedule.addVoter(userId)
         }
 
-        return scheduleVoters.mapValues { it.value.size }
-    }
-
-    @Transactional
-    fun updateScheduleStatus(pollId: Long) {
-        val confirmedScheduleVoters = mutableMapOf<Long, List<UUID>>()
-
-        val schedules = scheduleRepository.findAllByPollId(pollId)
-        val updatedSchedules = schedules.map { schedule ->
-            val votersCount = scheduleVoters[schedule.id]?.size ?: 0
-            val newStatus = if (votersCount >= 3) ScheduleStatus.CONFIRMED else ScheduleStatus.DROPPED
-
-            if (newStatus == ScheduleStatus.CONFIRMED) {
-                confirmedScheduleVoters[schedule.id!!] = scheduleVoters[schedule.id]!!.toList()
-            }
-
-            schedule.copy(scheduleStatus = newStatus)
-        }
-
-        scheduleRepository.saveAll(updatedSchedules)
-        applicationEventPublisher.publishEvent(ScheduleStatusChangedEvent.from(confirmedScheduleVoters))
+        return scheduleRepository.saveAll(schedules)
     }
 }
