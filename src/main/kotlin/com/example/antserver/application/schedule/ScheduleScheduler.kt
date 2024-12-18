@@ -13,7 +13,7 @@ class ScheduleScheduler(
     private val pollRepository: PollRepository,
 ) {
 
-    @Scheduled(cron = "0 0 18 ? * MON", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 18 ? * TUE", zone = "Asia/Seoul")
     fun triggerScheduleUpdate() {
         val lastPoll = pollRepository.findLast()
         val lastPollDate = lastPoll.createdAt
@@ -21,7 +21,7 @@ class ScheduleScheduler(
             ?: throw EmptyResultException("")
         val today = LocalDate.now()
 
-        if (ChronoUnit.WEEKS.between(lastPollDate, today) >= 2) {
+        if (ChronoUnit.DAYS.between(lastPollDate, today) == 3L) {
             scheduleService.updateScheduleStatus(lastPollId)
         }
     }

@@ -5,7 +5,6 @@ import com.example.antserver.application.schedule.ScheduleService
 import com.example.antserver.presentation.schedule.dto.ScheduleRequest
 import com.example.antserver.presentation.schedule.dto.ScheduleResponse
 import com.example.antserver.presentation.schedule.dto.VoteRequest
-import com.example.antserver.presentation.schedule.dto.VoteResponse
 import com.example.antserver.util.response.CommonResponse
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.web.bind.annotation.*
@@ -30,10 +29,10 @@ class ScheduleController(
     fun voteSchedules(
         request: HttpServletRequest,
         @RequestBody voteRequest: VoteRequest
-    ): CommonResponse<List<VoteResponse>> {
+    ): CommonResponse<String> {
         val accessToken = authService.getAccessToken(request)
         val userId = UUID.fromString(authService.parseClaims(accessToken))
-        val voteResult = scheduleService.voteSchedules(userId, voteRequest.scheduleIds)
-        return CommonResponse(VoteResponse.from(voteResult))
+        scheduleService.voteSchedules(userId, voteRequest.scheduleIds)
+        return CommonResponse("정상 등록되었습니다.")
     }
 }

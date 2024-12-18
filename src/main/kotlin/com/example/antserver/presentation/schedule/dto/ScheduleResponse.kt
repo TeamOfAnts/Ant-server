@@ -8,6 +8,7 @@ data class ScheduleResponse(
     val id: Long,
     val pollId: Long,
     val scheduleOn: Instant,
+    val votes: Int,
     val scheduleStatus: ScheduleStatus
 ) {
     companion object {
@@ -16,6 +17,7 @@ data class ScheduleResponse(
                 id = schedule.id!!,
                 pollId = schedule.pollId,
                 scheduleOn = schedule.scheduleOn,
+                votes = schedule.voters.size,
                 scheduleStatus = schedule.scheduleStatus
             )
         }
