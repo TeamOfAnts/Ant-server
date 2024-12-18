@@ -2,7 +2,7 @@ package com.example.antserver.util.config
 
 import com.example.antserver.util.filter.CustomAccessDeniedHandler
 import com.example.antserver.util.filter.CustomAuthenticationEntryPoint
-//import com.example.antserver.util.filter.JwtAuthenticationFilter
+import com.example.antserver.util.filter.JwtAuthenticationFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
@@ -17,7 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 class SecurityConfig(
     private val customAuthenticationEntryPoint: CustomAuthenticationEntryPoint,
     private val customAccessDeniedHandler: CustomAccessDeniedHandler,
-//    private val jwtAuthenticationFilter: JwtAuthenticationFilter,
+    private val jwtAuthenticationFilter: JwtAuthenticationFilter,
 ) {
     @Bean
     @Throws(Exception::class)
@@ -30,14 +30,14 @@ class SecurityConfig(
                 .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) } // Stateless 세션 설정
                 .authorizeHttpRequests { auth ->
                     auth.requestMatchers(HttpMethod.OPTIONS).permitAll() // CORS Preflight 방지
-                    auth.requestMatchers("/", "/h2-console/**", "/health", "/users/auth", "/users/self", "/users/name/*", "/auth/refresh").permitAll() // filtering 제외 TODO. JwtAuthenticationFilter 수정 후 "/users/self", "/users/name/*" 삭제
+                    auth.requestMatchers("/", "/h2-console/**", "/health", "/users/auth", "/auth/refresh").permitAll()
                     auth.anyRequest().authenticated() // 그 외는 인증 필요
                 }
                 .exceptionHandling { exceptions ->
                     exceptions.authenticationEntryPoint(customAuthenticationEntryPoint)
                     exceptions.accessDeniedHandler(customAccessDeniedHandler)
                 }
-//                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
 
             return http.build()
         }

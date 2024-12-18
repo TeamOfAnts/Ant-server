@@ -1,5 +1,6 @@
 package com.example.antserver.presentation.user
 
+import UserNameRequest
 import com.example.antserver.application.auth.AuthService
 import com.example.antserver.application.user.UserService
 import org.springframework.web.bind.annotation.*

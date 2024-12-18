@@ -34,8 +34,8 @@ class UserService(
         val googleUser = authenticateThroughGoogle(userAuthRequest.authorizationCode)
         val user = authenticateByEmailOrRegister(googleUser, userAuthRequest.provider)
 
-        val accessToken = authService.generateAccessToken(user.id)
-        val refreshToken = authService.generateRefreshToken()
+        val accessToken = authService.createAccessToken(user.id)
+        val refreshToken = authService.createRefreshToken()
 
         authService.renewRefreshToken(user.id, refreshToken)
 
@@ -88,7 +88,7 @@ class UserService(
                 email = googleUser.email,
                 provider = provider,
                 providerId = googleUser.sub,
-                role = UserRoleType.MEMBER
+                role = UserRoleType.ROLE_MEMBER
             )
         )
     }

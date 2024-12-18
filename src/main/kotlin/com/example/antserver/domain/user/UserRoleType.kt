@@ -1,6 +1,6 @@
 package com.example.antserver.domain.user
 
 enum class UserRoleType {
-    MEMBER,
-    ADMIN
+    ROLE_MEMBER,
+    ROLE_ADMIN
 }
