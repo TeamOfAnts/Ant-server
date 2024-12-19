@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
 import java.util.*
 
-import com.example.antserver.application.auth.AuthService
+import com.example.antserver.application.auth.TokenService
 import com.example.antserver.domain.user.UserRepository
 import com.example.antserver.util.exception.AuthenticationException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -15,7 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 
 @Component
 class JwtAuthenticationFilter(
-    private val authService: AuthService,
+    private val tokenService: TokenService,
     private val userRepository: UserRepository
 ): OncePerRequestFilter() {
     override fun doFilterInternal(
@@ -23,46 +23,46 @@ class JwtAuthenticationFilter(
         response: HttpServletResponse,
         filterChain: FilterChain,
     ) {
-        val excludedPaths = listOf("/h2-console", "/h2-console/**", "/health", "/users/auth", "/auth/refresh")
-        if (excludedPaths.any { request.servletPath.startsWith(it) }) {
+        if ( isExcludedPath(request.servletPath) ) {
             filterChain.doFilter(request, response)
             return
         }
-        if (checkAccessToken(request, response, filterChain)) {
-            filterChain.doFilter(request, response)
-        }
+
+        val accessToken = checkAccessToken(request)
+        authenticateUser(accessToken)
+        filterChain.doFilter(request, response)
     }
 
-    fun checkAccessToken(
-        request: HttpServletRequest,
-        response: HttpServletResponse,
-        filterChain: FilterChain
-    ): Boolean {
-        val accessToken = try {
-            authService.getAccessToken(request).takeIf(authService::isTokenValid)
+    private fun isExcludedPath(path: String): Boolean {
+        val excludedPaths = listOf("/h2-console", "/h2-console/**", "/health", "/users/auth", "/auth/refresh")
+        return excludedPaths.any { path.startsWith(it) }
+    }
+
+    private fun checkAccessToken(request: HttpServletRequest): String {
+        return try {
+            tokenService.getAccessToken(request).takeIf(tokenService::isTokenValid)
                 ?: throw AuthenticationException("Access token이 만료되었습니다.")
         } catch (ex: AuthenticationException) {
             request.setAttribute("customAuthErrorMessage", ex.message)
             throw ex
         }
+    }
 
-        authService.parseClaims(accessToken)
-            .let { UUID.fromString(it) }
-            ?.let { userId ->
-                val user = userRepository.findById(userId)
-                val userDetails = org.springframework.security.core.userdetails.User.builder()
-                    .username(user?.email)
-                    .password("")
-                    .roles(user?.role.toString())
-                    .build()
+    private fun authenticateUser(accessToken: String) {
+        val userId = UUID.fromString(tokenService.parseClaims(accessToken))
+        val user = userRepository.findById(userId)
+            ?: throw AuthenticationException("알 수 없는 유저($userId)입니다.")
+        val userDetails = org.springframework.security.core.userdetails.User.builder()
+            .username(user.email)
+            .password("")
+            .roles(user.role.toString())
+            .build()
 
-                val authentication = UsernamePasswordAuthenticationToken(
-                    userDetails,
-                    null,
-                    userDetails.authorities
-                )
-                SecurityContextHolder.getContext().authentication = authentication
-            }
-        return true
+        val authentication = UsernamePasswordAuthenticationToken(
+            userDetails,
+            null,
+            userDetails.authorities
+        )
+        SecurityContextHolder.getContext().authentication = authentication
     }
 }

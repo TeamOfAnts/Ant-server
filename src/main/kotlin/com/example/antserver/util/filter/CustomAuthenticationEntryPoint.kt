@@ -14,14 +14,14 @@ class CustomAuthenticationEntryPoint: AuthenticationEntryPoint {
         authException: AuthenticationException?
     ) {
         val errorMessage = request?.getAttribute("customAuthErrorMessage") as String?
-            ?:authException?.message.toString()
+            ?: "인증 오류입니다."
         response?.contentType = "application/json"
         response?.characterEncoding = "UTF-8"
         response?.status = HttpServletResponse.SC_UNAUTHORIZED
         response?.writer?.write("""
             {
                 "data": {
-                    "errorMessage": "${errorMessage ?: "unAuthorized"}"
+                    "errorMessage": "$errorMessage"
                 }
             }
         """.trimIndent())
