@@ -88,7 +88,7 @@ class UserService(
                 email = googleUser.email,
                 provider = provider,
                 providerId = googleUser.sub,
-                role = UserRoleType.ROLE_MEMBER
+                role = UserRoleType.MEMBER
             )
         )
     }

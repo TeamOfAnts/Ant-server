@@ -23,15 +23,13 @@ class JwtAuthenticationFilter(
         response: HttpServletResponse,
         filterChain: FilterChain,
     ) {
-        val excludedPaths = listOf("/users/auth", "/auth/refresh")
+        val excludedPaths = listOf("/h2-console/**", "/health", "/users/auth", "/auth/refresh")
         if (excludedPaths.any { request.servletPath.startsWith(it) }) {
             filterChain.doFilter(request, response)
             return
         }
-
-        when (checkAccessToken(request, response, filterChain)) {
-            true -> filterChain.doFilter(request, response)
-            false -> throw AuthenticationException("Access token이 만료되었습니다.")
+        if (checkAccessToken(request, response, filterChain)) {
+            filterChain.doFilter(request, response)
         }
     }
 
@@ -40,8 +38,13 @@ class JwtAuthenticationFilter(
         response: HttpServletResponse,
         filterChain: FilterChain
     ): Boolean {
-        val accessToken = authService.getAccessToken(request).takeIf(authService::isTokenValid)
-            ?: return false
+        val accessToken = try {
+            authService.getAccessToken(request).takeIf(authService::isTokenValid)
+                ?: throw AuthenticationException("Access token이 만료되었습니다.")
+        } catch (ex: AuthenticationException) {
+            request.setAttribute("customAuthErrorMessage", ex.message)
+            throw ex
+        }
 
         authService.parseClaims(accessToken)
             .let { UUID.fromString(it) }
@@ -49,7 +52,8 @@ class JwtAuthenticationFilter(
                 val user = userRepository.findById(userId)
                 val userDetails = org.springframework.security.core.userdetails.User.builder()
                     .username(user?.email)
-                            .roles(user?.role.toString())
+                    .password("")
+                    .roles(user?.role.toString())
                     .build()
 
                 val authentication = UsernamePasswordAuthenticationToken(
@@ -58,7 +62,7 @@ class JwtAuthenticationFilter(
                     userDetails.authorities
                 )
                 SecurityContextHolder.getContext().authentication = authentication
-                }
-            return true
-        }
+            }
+        return true
+    }
 }

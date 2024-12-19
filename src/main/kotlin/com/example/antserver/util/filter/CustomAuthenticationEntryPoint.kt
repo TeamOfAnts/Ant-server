@@ -13,6 +13,18 @@ class CustomAuthenticationEntryPoint: AuthenticationEntryPoint {
         response: HttpServletResponse?,
         authException: AuthenticationException?
     ) {
-        response?.sendError(HttpServletResponse.SC_UNAUTHORIZED)
+        val errorMessage = request?.getAttribute("customAuthErrorMessage") as String?
+            ?:authException?.message.toString()
+        response?.contentType = "application/json"
+        response?.characterEncoding = "UTF-8"
+        response?.status = HttpServletResponse.SC_UNAUTHORIZED
+        response?.writer?.write("""
+            {
+                "data": {
+                    "errorMessage": "${errorMessage ?: "unAuthorized"}"
+                }
+            }
+        """.trimIndent())
+        response?.writer?.flush()
     }
 }

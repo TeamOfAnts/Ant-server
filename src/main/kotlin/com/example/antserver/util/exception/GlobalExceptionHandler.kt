@@ -3,6 +3,7 @@ package com.example.antserver.util.exception
 import com.example.antserver.util.response.CommonResponse
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.security.core.AuthenticationException
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
