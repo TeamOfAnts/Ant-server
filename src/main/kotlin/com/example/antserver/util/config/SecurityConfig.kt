@@ -4,7 +4,6 @@ import com.example.antserver.util.exception.GlobalExceptionHandler
 import com.example.antserver.util.filter.CustomAccessDeniedHandler
 import com.example.antserver.util.filter.CustomAuthenticationEntryPoint
 import com.example.antserver.util.filter.JwtAuthenticationFilter
-import jakarta.servlet.http.HttpServletResponse
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod

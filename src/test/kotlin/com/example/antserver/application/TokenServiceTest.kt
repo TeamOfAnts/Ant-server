@@ -1,6 +1,6 @@
 package com.example.antserver.application
 
-import com.example.antserver.application.auth.AuthService
+import com.example.antserver.application.auth.TokenService
 import com.example.antserver.domain.auth.RefreshToken
 import com.example.antserver.domain.auth.RefreshTokenRepository
 import com.example.antserver.util.exception.AuthenticationException
@@ -14,19 +14,17 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.context.TestConfiguration
-import org.springframework.context.annotation.Import
 import org.testcontainers.shaded.com.google.common.net.HttpHeaders
 import java.util.*
 
 @SpringBootTest
 //@DataJpaTest
-//@Import(TestConfiguration::class)
-class AuthServiceTest {
+//@Import(TestConfiguration::class) TODO 테스트용 필요한 빈만 넣어두는 TestConfiguration 추가
+class TokenServiceTest {
     @Autowired
     private lateinit var refreshTokenRepository: RefreshTokenRepository
     @Autowired
-    private lateinit var authService: AuthService
+    private lateinit var tokenService: TokenService
     private val userId = Generators.timeBasedEpochGenerator().generate()
     private val mockRequest = mockk<HttpServletRequest>()
 
@@ -34,10 +32,10 @@ class AuthServiceTest {
     @DisplayName("Access Token에서 userId를 추출한다")
     fun parseClaim() {
         // given
-        val accessToken = authService.createAccessToken(userId)
+        val accessToken = tokenService.createAccessToken(userId)
 
         // when
-        val parsedUserId = UUID.fromString(authService.parseClaims(accessToken))
+        val parsedUserId = UUID.fromString(tokenService.parseClaims(accessToken))
 
         // then
         assertThat(parsedUserId).isEqualTo(userId)
@@ -47,11 +45,11 @@ class AuthServiceTest {
     @DisplayName("request에서 Access Token을 추출한다")
     fun getAccessToken() {
         // given
-        val accessToken = authService.createAccessToken(userId)
+        val accessToken = tokenService.createAccessToken(userId)
         every { mockRequest.getHeader(HttpHeaders.AUTHORIZATION) } returns "Bearer $accessToken"
 
         // when
-        val result = authService.getAccessToken(mockRequest)
+        val result = tokenService.getAccessToken(mockRequest)
 
         // then
         assertThat(result).isEqualTo(accessToken)
@@ -62,14 +60,14 @@ class AuthServiceTest {
     fun renewAccessTokenWhenRefreshTokenIsValid() {
         // given
         val userId = UUID.randomUUID()
-        val refreshToken = authService.createRefreshToken()
+        val refreshToken = tokenService.createRefreshToken()
         refreshTokenRepository.save(RefreshToken.of(userId, refreshToken))
 
         // when
-        val accessToken = authService.renewAccessToken(userId, refreshToken)
+        val accessToken = tokenService.refreshAccessToken(userId, refreshToken)
 
         // then
-        val parsedUserId = UUID.fromString(authService.parseClaims(accessToken))
+        val parsedUserId = UUID.fromString(tokenService.parseClaims(accessToken))
         assertThat(parsedUserId).isEqualTo(userId)
     }
 
@@ -78,11 +76,11 @@ class AuthServiceTest {
     fun failToRenewAccessTokenWhenRefreshTokenIsExpired() {
         // given
         val userId = UUID.randomUUID()
-        val refreshToken = authService.createRefreshToken()
+        val refreshToken = tokenService.createRefreshToken()
 
         // when & then
         assertThrows<AuthenticationException> {
-            authService.renewAccessToken(userId, refreshToken)
+            tokenService.refreshAccessToken(userId, refreshToken)
         }
     }
 
@@ -91,10 +89,10 @@ class AuthServiceTest {
     fun returnTrueIfTokenIsValid() {
         // given
         val userId = UUID.randomUUID()
-        val accessToken = authService.createAccessToken(userId)
+        val accessToken = tokenService.createAccessToken(userId)
 
         // when
-        val isValid = authService.isTokenValid(accessToken)
+        val isValid = tokenService.isTokenValid(accessToken)
 
         // then
         assertThat(isValid).isTrue()
@@ -107,7 +105,7 @@ class AuthServiceTest {
         val accessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBY2Nlc3NUb2tlbiIsImV4cCI6MTczNDExNzk1NiwidXNlcklkIjoiMDE5M2MxNDUtMmRmNy03MzE4LTk3ZTItZTQzYWQ4M2FkMzNjIn0.ya2CDWDq40aJQNSS2nN8K6328-M5baNB7IFEZXxNlwznXXFmypFGlsRpaar_n5CPtwNoKue3Hc7NteH3Xf2udw"
 
         // when
-        val isValid = authService.isTokenValid(accessToken)
+        val isValid = tokenService.isTokenValid(accessToken)
 
         // then
         assertThat(isValid).isFalse()
@@ -121,7 +119,7 @@ class AuthServiceTest {
         val accessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBY2Nlc3NUb2tlbiIsImV4cCI6MTczNDExNzk1NiwidXNlcklkIjoiMDE5M2MxNDUtMmRmNy03MzE4LTk3ZTItZTQzYWQ4M2FkMzNjIn0.ya2CDWDq40aJQNSS2nN8K6328-M5baNB7IFEZXxNlwznXXFmypFGlsRpaar_n5CPtwNoKue3Hc7NteH3Xf2udw"
 
         // when
-        val parsedUserId = authService.parseClaimsWithoutVerify(accessToken)
+        val parsedUserId = tokenService.parseClaimsWithoutVerify(accessToken)
 
         // then
         assertThat(parsedUserId).isEqualTo(userId)

@@ -13,7 +13,7 @@ import java.time.Instant
 import java.util.*
 
 @Service
-class AuthService(
+class TokenService(
     private val jwtProperties: JwtProperties,
     private val refreshTokenRepository: RefreshTokenRepository,
 ) {
@@ -41,7 +41,7 @@ class AuthService(
             .sign(Algorithm.HMAC512(jwtProperties.secret))
     }
 
-    fun renewAccessToken(userId: UUID, refreshToken: String): String {
+    fun refreshAccessToken(userId: UUID, refreshToken: String): String {
         assert(isTokenValid(refreshToken)) {
             throw AuthenticationException("Refresh Token이 만료되었습니다. 다시 로그인을 진행해주세요")
         }

@@ -1,6 +1,6 @@
 package com.example.antserver.presentation.auth
 
-import com.example.antserver.application.auth.AuthService
+import com.example.antserver.application.auth.TokenService
 import com.example.antserver.presentation.auth.dto.RefreshRequest
 import com.example.antserver.presentation.auth.dto.RefreshResponse
 import com.example.antserver.util.response.CommonResponse
@@ -14,17 +14,17 @@ import java.util.*
 @RestController
 @RequestMapping("auth")
 class AuthController(
-    private val authService: AuthService,
+    private val tokenService: TokenService,
 ) {
 
     @GetMapping("/refresh")
-    fun renewAccessToken(
+    fun refreshAccessToken(
         request: HttpServletRequest,
         @RequestBody refreshRequest: RefreshRequest
     ): CommonResponse<RefreshResponse> {
-        val currentAccessToken = authService.getAccessToken(request)
-        val userId = UUID.fromString(authService.parseClaimsWithoutVerify(currentAccessToken))
-        val refreshedAccessToken = authService.renewAccessToken(userId, refreshRequest.refreshToken)
-        return CommonResponse(RefreshResponse.of(refreshedAccessToken))
+        val currentAccessToken = tokenService.getAccessToken(request)
+        val userId = UUID.fromString(tokenService.parseClaimsWithoutVerify(currentAccessToken))
+        val newAccessToken = tokenService.refreshAccessToken(userId, refreshRequest.refreshToken)
+        return CommonResponse(RefreshResponse.of(newAccessToken))
     }
 }
