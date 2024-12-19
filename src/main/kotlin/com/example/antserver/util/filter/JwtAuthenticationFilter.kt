@@ -23,7 +23,7 @@ class JwtAuthenticationFilter(
         response: HttpServletResponse,
         filterChain: FilterChain,
     ) {
-        val excludedPaths = listOf("/h2-console/**", "/health", "/users/auth", "/auth/refresh")
+        val excludedPaths = listOf("/h2-console", "/h2-console/**", "/health", "/users/auth", "/auth/refresh")
         if (excludedPaths.any { request.servletPath.startsWith(it) }) {
             filterChain.doFilter(request, response)
             return
