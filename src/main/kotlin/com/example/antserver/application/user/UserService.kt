@@ -1,6 +1,6 @@
 package com.example.antserver.application.user
 
-import com.example.antserver.application.auth.TokenService
+import com.example.antserver.util.jwt.JwtTokenManager
 import com.example.antserver.domain.user.ProviderType
 import org.springframework.stereotype.Service
 import com.example.antserver.domain.user.User
@@ -25,7 +25,7 @@ import java.util.*
 @Service
 class UserService(
     private val userRepository: UserRepository,
-    private val tokenService: TokenService,
+    private val jwtTokenManager: JwtTokenManager,
     private val googleOAuthProperties: GoogleOAuthProperties,
     ) {
 
@@ -34,10 +34,10 @@ class UserService(
         val googleUser = authenticateThroughGoogle(userAuthRequest.authorizationCode)
         val user = authenticateByEmailOrRegister(googleUser, userAuthRequest.provider)
 
-        val accessToken = tokenService.createAccessToken(user.id)
-        val refreshToken = tokenService.createRefreshToken()
+        val accessToken = jwtTokenManager.createAccessToken(user.id)
+        val refreshToken = jwtTokenManager.createRefreshToken()
 
-        tokenService.renewRefreshToken(user.id, refreshToken)
+        jwtTokenManager.renewRefreshToken(user.id, refreshToken)
 
         return UserAuthResponse.of(accessToken, refreshToken)
     }

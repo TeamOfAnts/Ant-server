@@ -1,4 +1,4 @@
-package com.example.antserver.util.filter
+package com.example.antserver.util.jwt
 
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
 import java.util.*
 
-import com.example.antserver.application.auth.TokenService
 import com.example.antserver.domain.user.UserRepository
 import com.example.antserver.util.exception.AuthenticationException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -15,7 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 
 @Component
 class JwtAuthenticationFilter(
-    private val tokenService: TokenService,
+    private val jwtTokenManager: JwtTokenManager,
     private val userRepository: UserRepository
 ): OncePerRequestFilter() {
     override fun doFilterInternal(
@@ -40,7 +39,7 @@ class JwtAuthenticationFilter(
 
     private fun checkAccessToken(request: HttpServletRequest): String {
         return try {
-            tokenService.getAccessToken(request).takeIf(tokenService::isTokenValid)
+            jwtTokenManager.getAccessToken(request).takeIf(jwtTokenManager::isTokenValid)
                 ?: throw AuthenticationException("Access token이 만료되었습니다.")
         } catch (ex: AuthenticationException) {
             request.setAttribute("customAuthErrorMessage", ex.message)
@@ -49,7 +48,7 @@ class JwtAuthenticationFilter(
     }
 
     private fun authenticateUser(accessToken: String) {
-        val userId = UUID.fromString(tokenService.parseClaims(accessToken))
+        val userId = UUID.fromString(jwtTokenManager.parseClaims(accessToken))
         val user = userRepository.findById(userId)
             ?: throw AuthenticationException("알 수 없는 유저($userId)입니다.")
         val userDetails = org.springframework.security.core.userdetails.User.builder()

@@ -1,4 +1,4 @@
-package com.example.antserver.application.auth
+package com.example.antserver.util.jwt
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
@@ -6,14 +6,14 @@ import com.example.antserver.domain.auth.RefreshToken
 import com.example.antserver.domain.auth.RefreshTokenRepository
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpHeaders
-import org.springframework.stereotype.Service
 import com.example.antserver.util.config.JwtProperties
 import com.example.antserver.util.exception.AuthenticationException
+import org.springframework.stereotype.Component
 import java.time.Instant
 import java.util.*
 
-@Service
-class TokenService(
+@Component
+class JwtTokenManager(
     private val jwtProperties: JwtProperties,
     private val refreshTokenRepository: RefreshTokenRepository,
 ) {

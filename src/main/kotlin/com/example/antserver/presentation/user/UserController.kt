@@ -1,7 +1,7 @@
 package com.example.antserver.presentation.user
 
 import UserNameRequest
-import com.example.antserver.application.auth.TokenService
+import com.example.antserver.util.jwt.JwtTokenManager
 import com.example.antserver.application.user.UserService
 import org.springframework.web.bind.annotation.*
 import com.example.antserver.presentation.user.dto.UserAuthRequest
@@ -15,7 +15,7 @@ import java.util.*
 @RequestMapping("/users")
 class UserController(
     private val userService: UserService,
-    private val tokenService: TokenService
+    private val jwtTokenManager: JwtTokenManager
 
 ) {
     @PostMapping("/auth")
@@ -31,16 +31,16 @@ class UserController(
         request: HttpServletRequest,
         @RequestBody userNameRequest: UserNameRequest,
     ): CommonResponse<String> {
-        val accessToken = tokenService.getAccessToken(request)
-        val userId = UUID.fromString(tokenService.parseClaims(accessToken))
+        val accessToken = jwtTokenManager.getAccessToken(request)
+        val userId = UUID.fromString(jwtTokenManager.parseClaims(accessToken))
         userService.updateUser(userId, userNameRequest.name)
         return CommonResponse("${userNameRequest.name}님의 이름이 정상 등록되었습니다.")
     }
 
     @GetMapping("/self")
     fun getCurrentUser(request: HttpServletRequest): CommonResponse<UserDetailResponse> {
-        val accessToken = tokenService.getAccessToken(request)
-        val userId = UUID.fromString(tokenService.parseClaims(accessToken))
+        val accessToken = jwtTokenManager.getAccessToken(request)
+        val userId = UUID.fromString(jwtTokenManager.parseClaims(accessToken))
         val user = userService.findUser(userId)
         return CommonResponse(UserDetailResponse.of(user))
     }

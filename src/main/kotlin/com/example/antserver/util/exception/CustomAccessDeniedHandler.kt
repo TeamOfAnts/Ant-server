@@ -1,4 +1,4 @@
-package com.example.antserver.util.filter
+package com.example.antserver.util.exception
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
