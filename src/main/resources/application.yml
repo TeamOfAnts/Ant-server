@@ -1,0 +1,33 @@
+spring:
+  security:
+    enabled: false
+  datasource :
+    url: jdbc:mysql://localhost:3306/ant
+    username: root
+    password: 1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.MySQLDialect
+    show-sql: true
+  mvc:
+    log-request-details: true
+
+oauth:
+  google:
+    client-id:
+    client-secret:
+    redirect-uri: http://localhost:8888/auth/callback?provider=google
+    token-url: https://oauth2.googleapis.com/token
+    userinfo-url: https://oauth2.googleapis.com/tokeninfo?id_token={idToken}
+
+jwt:
+  secret:
+  expiration-time:
+    access: 3600000 # 1시간 (1000 * 60 * 60)
+    refresh: 7779600000 # 90일 (1000 * 60 * 60 * 24 * 90)
+  bearer-prefix: "Bearer "
+  access-token-subject: AccessToken
+  refresh-token-subject: RefreshToken
+  claim: userId
