@@ -41,8 +41,15 @@ class UserService(
         }
         val user = authenticateByEmailOrRegister(googleUser.await(), userAuthRequest.provider)
 
-        val newAccessToken = jwtTokenManager.createAccessToken(user.id)
-        val newRefreshToken = jwtTokenManager.createRefreshToken()
+        val deferredNewAccessToken = async {
+            jwtTokenManager.createAccessToken(user.id)
+        }
+        val deferredNewRefreshToken = async {
+            jwtTokenManager.createRefreshToken()
+        }
+
+        val newAccessToken = deferredNewAccessToken.await()
+        val newRefreshToken = deferredNewRefreshToken.await()
 
         launch {
             jwtTokenManager.refreshRefreshToken(user.id, newRefreshToken)
