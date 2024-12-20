@@ -36,24 +36,19 @@ class UserService(
 
     @Transactional
     suspend fun authenticateUser(userAuthRequest: UserAuthRequest): UserAuthResponse = coroutineScope {
-        val googleUser = async {
-            authenticateThroughGoogle(userAuthRequest.authorizationCode)
-        }
-        val user = authenticateByEmailOrRegister(googleUser.await(), userAuthRequest.provider)
+        val googleUser = authenticateThroughGoogle(userAuthRequest.authorizationCode)
+        val user = authenticateByEmailOrRegister(googleUser, userAuthRequest.provider)
 
-        val deferredNewAccessToken = async {
-            jwtTokenManager.createAccessToken(user.id)
-        }
         val deferredNewRefreshToken = async {
             jwtTokenManager.createRefreshToken()
         }
-
-        val newAccessToken = deferredNewAccessToken.await()
-        val newRefreshToken = deferredNewRefreshToken.await()
-
-        launch {
-            jwtTokenManager.refreshRefreshToken(user.id, newRefreshToken)
+        val deferredNewAccessToken = async {
+            jwtTokenManager.createAccessToken(user.id)
         }
+        val newRefreshToken = deferredNewRefreshToken.await()
+        val newAccessToken = deferredNewAccessToken.await()
+
+        jwtTokenManager.refreshRefreshToken(user.id, newRefreshToken)
 
         return@coroutineScope UserAuthResponse.of(newAccessToken, newRefreshToken)
     }
