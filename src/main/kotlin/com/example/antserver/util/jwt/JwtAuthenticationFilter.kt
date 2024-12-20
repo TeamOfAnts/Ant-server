@@ -32,12 +32,12 @@ class JwtAuthenticationFilter(
         filterChain.doFilter(request, response)
     }
 
-    private fun isExcludedPath(path: String): Boolean {
+    fun isExcludedPath(path: String): Boolean {
         val excludedPaths = listOf("/h2-console", "/h2-console/**", "/health", "/users/auth", "/auth/refresh")
         return excludedPaths.any { path.startsWith(it) }
     }
 
-    private fun checkAccessToken(request: HttpServletRequest): String {
+    fun checkAccessToken(request: HttpServletRequest): String {
         return try {
             jwtTokenManager.getAccessToken(request).takeIf(jwtTokenManager::isTokenValid)
                 ?: throw AuthenticationException("Access token이 만료되었습니다.")
@@ -47,10 +47,10 @@ class JwtAuthenticationFilter(
         }
     }
 
-    private fun authenticateUser(accessToken: String) {
+    fun authenticateUser(accessToken: String) {
         val userId = UUID.fromString(jwtTokenManager.parseClaims(accessToken))
         val user = userRepository.findById(userId)
-            ?: throw AuthenticationException("알 수 없는 유저($userId)입니다.")
+            ?: throw AuthenticationException("알 수 없는 유저($userId)의 요청입니다.")
         val userDetails = org.springframework.security.core.userdetails.User.builder()
             .username(user.email)
             .password("")

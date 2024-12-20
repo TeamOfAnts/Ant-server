@@ -34,12 +34,12 @@ class UserService(
         val googleUser = authenticateThroughGoogle(userAuthRequest.authorizationCode)
         val user = authenticateByEmailOrRegister(googleUser, userAuthRequest.provider)
 
-        val accessToken = jwtTokenManager.createAccessToken(user.id)
-        val refreshToken = jwtTokenManager.createRefreshToken()
+        val newAccessToken = jwtTokenManager.createAccessToken(user.id)
+        val newRefreshToken = jwtTokenManager.createRefreshToken()
 
-        jwtTokenManager.renewRefreshToken(user.id, refreshToken)
+        jwtTokenManager.refreshRefreshToken(user.id, newRefreshToken)
 
-        return UserAuthResponse.of(accessToken, refreshToken)
+        return UserAuthResponse.of(newAccessToken, newRefreshToken)
     }
 
     fun authenticateThroughGoogle(authorizationCode: String): GoogleProfileResponse {

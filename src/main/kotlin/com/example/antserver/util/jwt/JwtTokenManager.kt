@@ -43,14 +43,14 @@ class JwtTokenManager(
 
     fun refreshAccessToken(userId: UUID, refreshToken: String): String {
         assert(isTokenValid(refreshToken)) {
-            throw AuthenticationException("Refresh Token이 만료되었습니다. 다시 로그인을 진행해주세요")
+            throw AuthenticationException("Refresh Token이 만료되었습니다. 다시 로그인을 진행해주세요.")
         }
         refreshTokenRepository.findByToken(refreshToken)
             ?: throw AuthenticationException("존재하지 않는 Refresh Token입니다.")
         return createAccessToken(userId)
     }
 
-    fun renewRefreshToken(userId: UUID, newRefreshToken: String) {
+    fun refreshRefreshToken(userId: UUID, newRefreshToken: String) {
         val refreshToken = refreshTokenRepository.findByUserId(userId)
             ?.apply { update(newRefreshToken) }
             ?: RefreshToken.of(userId, newRefreshToken)
