@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpHeaders
 import com.example.antserver.util.config.JwtProperties
 import com.example.antserver.util.exception.AuthenticationException
+import com.example.antserver.util.log.logger
 import org.springframework.stereotype.Component
 import java.time.Instant
 import java.util.*
@@ -17,6 +18,7 @@ class JwtTokenManager(
     private val jwtProperties: JwtProperties,
     private val refreshTokenRepository: RefreshTokenRepository,
 ) {
+    private val logger = JwtTokenManager::class.logger()
 
     fun isTokenValid(token: String): Boolean = runCatching {
         val algorithm = Algorithm.HMAC512(jwtProperties.secret)
@@ -43,10 +45,14 @@ class JwtTokenManager(
 
     fun refreshAccessToken(userId: UUID, refreshToken: String): String {
         assert(isTokenValid(refreshToken)) {
-            throw AuthenticationException("Refresh Token이 만료되었습니다. 다시 로그인을 진행해주세요.")
+            logger.warn("The Refresh Token($refreshToken) for the user with userId($userId) has expired.")
+            throw AuthenticationException("인증 오류입니다.")
         }
         refreshTokenRepository.findByToken(refreshToken)
-            ?: throw AuthenticationException("존재하지 않는 Refresh Token입니다.")
+            ?: run {
+                logger.warn("The Refresh Token($refreshToken) does not exist.")
+                throw AuthenticationException("인증 오류입니다.")
+            }
         return createAccessToken(userId)
     }
 
@@ -63,22 +69,34 @@ class JwtTokenManager(
             .verify(accessToken)
             .getClaim(jwtProperties.claim)
             ?.asString()
-            ?: throw AuthenticationException("Access Token에서 userId 클레임을 추출할 수 없습니다.")
+            ?: run {
+                logger.warn("Unable to parse the userId from the Access Token.")
+                throw AuthenticationException("인증 오류입니다.")
+            }
     }
 
     fun parseClaimsWithoutVerify(accessToken: String): String {
         return JWT.decode(accessToken)
             .getClaim(jwtProperties.claim)
             ?.asString()
-            ?: throw AuthenticationException("Access Token에서 userId 클레임을 추출할 수 없습니다.")
+            ?: run {
+                logger.warn("Unable to parse the userId from the Access Token.")
+                throw AuthenticationException("인증 오류입니다.")
+            }
     }
 
     fun getAccessToken(request: HttpServletRequest): String {
         val header = request.getHeader(HttpHeaders.AUTHORIZATION)
-            ?: throw AuthenticationException("Authorization 헤더가 없습니다.")
+            ?: run {
+                logger.warn("Authorization header is missing")
+                throw AuthenticationException("인증 오류입니다.")
+            }
         return header.takeIf { it.startsWith(jwtProperties.bearerPrefix) }
             ?.removePrefix(jwtProperties.bearerPrefix)
             ?.trim()
-            ?: throw AuthenticationException("Bearer <token> 형식이 맞지 않습니다.")
+            ?: run {
+                logger.warn("The format does not match Bearer <token>.")
+                throw AuthenticationException("인증 오류입니다.")
+            }
     }
 }

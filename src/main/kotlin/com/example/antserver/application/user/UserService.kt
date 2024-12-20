@@ -12,7 +12,8 @@ import com.example.antserver.presentation.user.dto.UserAuthRequest
 import com.example.antserver.presentation.user.dto.UserAuthResponse
 import com.example.antserver.util.config.GoogleOAuthProperties
 import com.example.antserver.util.exception.AuthenticationException
-import com.example.antserver.util.exception.UserNotFoundException
+import com.example.antserver.util.exception.EmptyResultException
+import com.example.antserver.util.log.logger
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -31,10 +32,10 @@ class UserService(
     private val jwtTokenManager: JwtTokenManager,
     private val googleOAuthProperties: GoogleOAuthProperties,
     ) {
+    private val logger = logger()
 
     @Transactional
     suspend fun authenticateUser(userAuthRequest: UserAuthRequest): UserAuthResponse = coroutineScope {
-
         val googleUser = async {
             authenticateThroughGoogle(userAuthRequest.authorizationCode)
         }
@@ -77,7 +78,10 @@ class UserService(
             googleTokenRequest,
             GoogleAccessTokenResponse::class.java
         ).body?.idToken
-            ?: throw AuthenticationException("유효하지 않은 Authorization Code입니다.")
+            ?: run {
+                logger.warn("Invalid Authorization Code ($authorizationCode)")
+                throw AuthenticationException("")
+            }
     }
 
     fun getGoogleProfile(googleJwtToken: String): GoogleProfileResponse {
@@ -85,7 +89,11 @@ class UserService(
             googleOAuthProperties.userInfoUrl.replace("{idToken}", googleJwtToken),
             GoogleProfileResponse::class.java
         ).body?.takeIf { it.emailVerified }
-            ?: throw UserNotFoundException("Google에서 유저 정보를 가져올 수 없습니다.")
+            ?: run {
+                logger.warn("Can't get google profile from ${googleOAuthProperties.userInfoUrl} with $googleJwtToken")
+                throw EmptyResultException("")
+            }
+
     }
 
     fun authenticateByEmailOrRegister(googleUser: GoogleProfileResponse, provider: ProviderType): User {
@@ -103,14 +111,16 @@ class UserService(
 
     @Transactional
     fun updateUser(userId: UUID, newName: String): User {
-        val user = userRepository.findById(userId)
-            ?: throw UserNotFoundException("유저를 찾을 수 없습니다.")
+        val user = findUser(userId)
         user.updateName(newName)
         return userRepository.save(user)
     }
 
     fun findUser(userId: UUID): User {
         return userRepository.findById(userId)
-            ?: throw UserNotFoundException("유저를 찾을 수 없습니다.")
+            ?: run {
+                logger.warn("User not exists with id: $userId")
+                throw EmptyResultException("유저를 찾을 수 없습니다.")
+            }
     }
 }

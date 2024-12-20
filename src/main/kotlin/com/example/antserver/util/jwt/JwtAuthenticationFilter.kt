@@ -17,6 +17,7 @@ class JwtAuthenticationFilter(
     private val jwtTokenManager: JwtTokenManager,
     private val userRepository: UserRepository
 ): OncePerRequestFilter() {
+
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
@@ -40,7 +41,10 @@ class JwtAuthenticationFilter(
     fun checkAccessToken(request: HttpServletRequest): String {
         return try {
             jwtTokenManager.getAccessToken(request).takeIf(jwtTokenManager::isTokenValid)
-                ?: throw AuthenticationException("Access token이 만료되었습니다.")
+                ?: run {
+                    logger.warn("The access token has expired.")
+                    throw AuthenticationException("Access token이 만료되었습니다.")
+                }
         } catch (ex: AuthenticationException) {
             request.setAttribute("customAuthErrorMessage", ex.message)
             throw ex
@@ -50,7 +54,10 @@ class JwtAuthenticationFilter(
     fun authenticateUser(accessToken: String) {
         val userId = UUID.fromString(jwtTokenManager.parseClaims(accessToken))
         val user = userRepository.findById(userId)
-            ?: throw AuthenticationException("알 수 없는 유저($userId)의 요청입니다.")
+            ?: run {
+                logger.warn("Request from an unknown user (userId: $userId).")
+                throw AuthenticationException("인증 오류입니다.")
+            }
         val userDetails = org.springframework.security.core.userdetails.User.builder()
             .username(user.email)
             .password("")
