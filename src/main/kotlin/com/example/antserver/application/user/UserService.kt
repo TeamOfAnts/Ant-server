@@ -13,6 +13,9 @@ import com.example.antserver.presentation.user.dto.UserAuthResponse
 import com.example.antserver.util.config.GoogleOAuthProperties
 import com.example.antserver.util.exception.AuthenticationException
 import com.example.antserver.util.exception.UserNotFoundException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -30,16 +33,21 @@ class UserService(
     ) {
 
     @Transactional
-    fun authenticateUser(userAuthRequest: UserAuthRequest): UserAuthResponse {
-        val googleUser = authenticateThroughGoogle(userAuthRequest.authorizationCode)
-        val user = authenticateByEmailOrRegister(googleUser, userAuthRequest.provider)
+    suspend fun authenticateUser(userAuthRequest: UserAuthRequest): UserAuthResponse = coroutineScope {
+
+        val googleUser = async {
+            authenticateThroughGoogle(userAuthRequest.authorizationCode)
+        }
+        val user = authenticateByEmailOrRegister(googleUser.await(), userAuthRequest.provider)
 
         val newAccessToken = jwtTokenManager.createAccessToken(user.id)
         val newRefreshToken = jwtTokenManager.createRefreshToken()
 
-        jwtTokenManager.refreshRefreshToken(user.id, newRefreshToken)
+        launch {
+            jwtTokenManager.refreshRefreshToken(user.id, newRefreshToken)
+        }
 
-        return UserAuthResponse.of(newAccessToken, newRefreshToken)
+        return@coroutineScope UserAuthResponse.of(newAccessToken, newRefreshToken)
     }
 
     fun authenticateThroughGoogle(authorizationCode: String): GoogleProfileResponse {

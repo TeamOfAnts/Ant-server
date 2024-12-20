@@ -19,7 +19,7 @@ class UserController(
 
 ) {
     @PostMapping("/auth")
-    fun authenticateUser(
+    suspend fun authenticateUser(
         @RequestBody userAuthRequest: UserAuthRequest
     ): CommonResponse<UserAuthResponse> {
         val userAuthResponse = userService.authenticateUser(userAuthRequest)
