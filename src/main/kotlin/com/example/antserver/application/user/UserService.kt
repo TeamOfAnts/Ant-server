@@ -36,20 +36,20 @@ class UserService(
     @Transactional
     suspend fun authenticateUser(userAuthRequest: UserAuthRequest): UserAuthResponse = coroutineScope {
         val googleUser = authenticateThroughGoogle(userAuthRequest.authorizationCode)
-        val user = authenticateByEmailOrRegister(googleUser, userAuthRequest.provider)
+        val (userId, isNew) = authenticateByEmailOrRegister(googleUser, userAuthRequest.provider)
 
         val deferredNewRefreshToken = async {
             jwtTokenManager.createRefreshToken()
         }
         val deferredNewAccessToken = async {
-            jwtTokenManager.createAccessToken(user.id)
+            jwtTokenManager.createAccessToken(userId)
         }
         val newRefreshToken = deferredNewRefreshToken.await()
         val newAccessToken = deferredNewAccessToken.await()
 
-        jwtTokenManager.refreshRefreshToken(user.id, newRefreshToken)
+        jwtTokenManager.refreshRefreshToken(userId, newRefreshToken)
 
-        return@coroutineScope UserAuthResponse.of(newAccessToken, newRefreshToken)
+        return@coroutineScope UserAuthResponse.of(newAccessToken, newRefreshToken, isNew)
     }
 
     fun authenticateThroughGoogle(authorizationCode: String): GoogleProfileResponse {
@@ -97,17 +97,24 @@ class UserService(
 
     }
 
-    fun authenticateByEmailOrRegister(googleUser: GoogleProfileResponse, provider: ProviderType): User {
+    fun authenticateByEmailOrRegister(googleUser: GoogleProfileResponse, provider: ProviderType): Pair<UUID, Boolean> {
         val email = googleUser.email
-        return userRepository.findByEmail(email) ?: userRepository.save(
-            User.of(
-                name = googleUser.name,
-                email = googleUser.email,
-                provider = provider,
-                providerId = googleUser.sub,
-                role = UserRoleType.MEMBER
+        val existingUser = userRepository.findByEmail(email)
+
+        return if (existingUser != null) {
+            Pair(existingUser.id, false)
+        } else {
+            val newUser = userRepository.save(
+                User.of(
+                    name = googleUser.name,
+                    email = googleUser.email,
+                    provider = provider,
+                    providerId = googleUser.sub,
+                    role = UserRoleType.MEMBER
+                )
             )
-        )
+            Pair(newUser.id, true)
+        }
     }
 
     @Transactional

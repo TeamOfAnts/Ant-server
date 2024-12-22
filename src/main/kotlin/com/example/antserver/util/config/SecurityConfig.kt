@@ -26,7 +26,7 @@ class SecurityConfig(
 ) {
 
     fun corsConfigurationSource(): CorsConfigurationSource {
-        return CorsConfigurationSource { request ->
+        return CorsConfigurationSource {
             val config = CorsConfiguration()
             config.allowedHeaders = Collections.singletonList("*")
             config.allowedMethods = Collections.singletonList("*")
@@ -43,7 +43,7 @@ class SecurityConfig(
             .httpBasic { it.disable() }
             .formLogin { it.disable() }
             .headers { it.frameOptions { frameOptions -> frameOptions.sameOrigin() } }
-            .cors { corsConfigurer -> corsConfigurer.configurationSource(corsConfigurationSource()) } // CORS 에러 방지용 TODO. 도메인 추가
+            .cors { corsConfigurer -> corsConfigurer.configurationSource(corsConfigurationSource()) } // CORS 에러 방지용
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) } // Stateless 세션 설정
             .authorizeHttpRequests { auth ->
                 auth.requestMatchers(HttpMethod.OPTIONS).permitAll() // CORS Preflight 방지
