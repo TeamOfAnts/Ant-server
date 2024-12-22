@@ -34,7 +34,7 @@ class PollService(
             pollStatus = PollStatus.OPEN
         )
         pollRepository.save(poll)
-        applicationEventPublisher.publishEvent(PollGeneratedEvent(poll.id!!, poll.startAt, poll.endAt))
+        applicationEventPublisher.publishEvent(PollGeneratedEvent.of(poll.id!!, poll.startAt, poll.endAt))
         return poll
     }
 

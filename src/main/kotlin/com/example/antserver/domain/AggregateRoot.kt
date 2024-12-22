@@ -15,10 +15,8 @@ abstract class AggregateRoot {
     @CreatedDate
     @Column(nullable = false, updatable = false)
     var createdAt: Instant? = Instant.now()
-        protected set
 
     @LastModifiedDate
     @Column
     var updatedAt: Instant? = null
-        protected set
 }

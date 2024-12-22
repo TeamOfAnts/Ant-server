@@ -16,7 +16,7 @@ data class RefreshToken(
     val userId: UUID,
 
     @Column(name = "token")
-    private var token: String,
+    var token: String,
 ): AggregateRoot() {
 
     companion object {
@@ -28,7 +28,7 @@ data class RefreshToken(
         }
     }
 
-    fun update(token: String) {
-        this.token = token
+    fun update(newToken: String) {
+        this.token = newToken
     }
 }

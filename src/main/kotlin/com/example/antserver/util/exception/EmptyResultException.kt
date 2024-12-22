@@ -1,4 +1,3 @@
 package com.example.antserver.util.exception
 
-class EmptyResultException(message: String): RuntimeException(message) {
-}
+class EmptyResultException(message: String) : RuntimeException(message)

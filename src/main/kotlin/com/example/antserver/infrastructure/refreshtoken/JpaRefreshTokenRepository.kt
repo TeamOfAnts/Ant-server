@@ -7,4 +7,5 @@ import java.util.UUID
 interface JpaRefreshTokenRepository: JpaRepository<RefreshToken, UUID> {
     fun save(refreshToken: RefreshToken): RefreshToken
     fun findByUserId(userId: UUID): RefreshToken?
+    fun findByToken(token: String): RefreshToken?
 }

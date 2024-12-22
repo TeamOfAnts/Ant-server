@@ -17,7 +17,7 @@ class ScheduleRepositoryImpl(
         return jpaScheduleRepository.saveAll(schedules)
     }
 
-    override fun findByPollId(pollId: Long): List<Schedule> {
-        return jpaScheduleRepository.findByPollId(pollId)
+    override fun findAllByPollId(pollId: Long): List<Schedule> {
+        return jpaScheduleRepository.findAllByPollId(pollId)
     }
 }
