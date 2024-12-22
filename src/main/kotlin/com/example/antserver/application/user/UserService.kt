@@ -1,6 +1,6 @@
 package com.example.antserver.application.user
 
-import com.example.antserver.application.auth.AuthService
+import com.example.antserver.util.jwt.JwtTokenManager
 import com.example.antserver.domain.user.ProviderType
 import org.springframework.stereotype.Service
 import com.example.antserver.domain.user.User
@@ -12,7 +12,10 @@ import com.example.antserver.presentation.user.dto.UserAuthRequest
 import com.example.antserver.presentation.user.dto.UserAuthResponse
 import com.example.antserver.util.config.GoogleOAuthProperties
 import com.example.antserver.util.exception.AuthenticationException
-import com.example.antserver.util.exception.UserNotFoundException
+import com.example.antserver.util.exception.EmptyResultException
+import com.example.antserver.util.log.logger
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -25,21 +28,28 @@ import java.util.*
 @Service
 class UserService(
     private val userRepository: UserRepository,
-    private val authService: AuthService,
+    private val jwtTokenManager: JwtTokenManager,
     private val googleOAuthProperties: GoogleOAuthProperties,
     ) {
+    private val logger = logger()
 
     @Transactional
-    fun authenticateUser(userAuthRequest: UserAuthRequest): UserAuthResponse {
+    suspend fun authenticateUser(userAuthRequest: UserAuthRequest): UserAuthResponse = coroutineScope {
         val googleUser = authenticateThroughGoogle(userAuthRequest.authorizationCode)
-        val user = authenticateByEmailOrRegister(googleUser, userAuthRequest.provider)
+        val (userId, isNew) = authenticateByEmailOrRegister(googleUser, userAuthRequest.provider)
 
-        val accessToken = authService.generateAccessToken(user.id)
-        val refreshToken = authService.generateRefreshToken()
+        val deferredNewRefreshToken = async {
+            jwtTokenManager.createRefreshToken()
+        }
+        val deferredNewAccessToken = async {
+            jwtTokenManager.createAccessToken(userId)
+        }
+        val newRefreshToken = deferredNewRefreshToken.await()
+        val newAccessToken = deferredNewAccessToken.await()
 
-        authService.renewRefreshToken(user.id, refreshToken)
+        jwtTokenManager.refreshRefreshToken(userId, newRefreshToken)
 
-        return UserAuthResponse.of(accessToken, refreshToken)
+        return@coroutineScope UserAuthResponse.of(newAccessToken, newRefreshToken, isNew)
     }
 
     fun authenticateThroughGoogle(authorizationCode: String): GoogleProfileResponse {
@@ -69,7 +79,10 @@ class UserService(
             googleTokenRequest,
             GoogleAccessTokenResponse::class.java
         ).body?.idToken
-            ?: throw AuthenticationException("유효하지 않은 Authorization Code입니다.")
+            ?: run {
+                logger.warn("Invalid Authorization Code ($authorizationCode)")
+                throw AuthenticationException("")
+            }
     }
 
     fun getGoogleProfile(googleJwtToken: String): GoogleProfileResponse {
@@ -77,32 +90,45 @@ class UserService(
             googleOAuthProperties.userInfoUrl.replace("{idToken}", googleJwtToken),
             GoogleProfileResponse::class.java
         ).body?.takeIf { it.emailVerified }
-            ?: throw UserNotFoundException("Google에서 유저 정보를 가져올 수 없습니다.")
+            ?: run {
+                logger.warn("Can't get google profile from ${googleOAuthProperties.userInfoUrl} with $googleJwtToken")
+                throw EmptyResultException("")
+            }
+
     }
 
-    fun authenticateByEmailOrRegister(googleUser: GoogleProfileResponse, provider: ProviderType): User {
+    fun authenticateByEmailOrRegister(googleUser: GoogleProfileResponse, provider: ProviderType): Pair<UUID, Boolean> {
         val email = googleUser.email
-        return userRepository.findByEmail(email) ?: userRepository.save(
-            User.of(
-                name = googleUser.name,
-                email = googleUser.email,
-                provider = provider,
-                providerId = googleUser.sub,
-                role = UserRoleType.MEMBER
+        val existingUser = userRepository.findByEmail(email)
+
+        return if (existingUser != null) {
+            Pair(existingUser.id, false)
+        } else {
+            val newUser = userRepository.save(
+                User.of(
+                    name = googleUser.name,
+                    email = googleUser.email,
+                    provider = provider,
+                    providerId = googleUser.sub,
+                    role = UserRoleType.MEMBER
+                )
             )
-        )
+            Pair(newUser.id, true)
+        }
     }
 
     @Transactional
     fun updateUser(userId: UUID, newName: String): User {
-        val user = userRepository.findById(userId)
-            ?: throw UserNotFoundException("유저를 찾을 수 없습니다.")
+        val user = findUser(userId)
         user.updateName(newName)
         return userRepository.save(user)
     }
 
     fun findUser(userId: UUID): User {
         return userRepository.findById(userId)
-            ?: throw UserNotFoundException("유저를 찾을 수 없습니다.")
+            ?: run {
+                logger.warn("User not exists with id: $userId")
+                throw EmptyResultException("유저를 찾을 수 없습니다.")
+            }
     }
 }

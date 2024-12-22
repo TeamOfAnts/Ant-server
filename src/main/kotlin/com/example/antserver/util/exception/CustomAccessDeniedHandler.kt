@@ -1,4 +1,4 @@
-package com.example.antserver.util.filter
+package com.example.antserver.util.exception
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -10,10 +10,10 @@ import org.springframework.stereotype.Component
 class CustomAccessDeniedHandler: AccessDeniedHandler {
 
     override fun handle(
-        request: HttpServletRequest?,
-        response: HttpServletResponse?,
-        accessDeniedException: AccessDeniedException?
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        accessDeniedException: AccessDeniedException
     ) {
-        response?.sendError(HttpServletResponse.SC_FORBIDDEN)
+        response.sendError(HttpServletResponse.SC_FORBIDDEN)
     }
 }
