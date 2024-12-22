@@ -47,7 +47,7 @@ class SecurityConfig(
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) } // Stateless 세션 설정
             .authorizeHttpRequests { auth ->
                 auth.requestMatchers(HttpMethod.OPTIONS).permitAll() // CORS Preflight 방지
-                auth.requestMatchers("/h2-console", "/h2-console/**", "/health", "/users/auth", "/auth/refresh").permitAll()
+                auth.requestMatchers("/health", "/users/auth", "/auth/refresh").permitAll()
                 auth.anyRequest().authenticated() // 그 외는 인증 필요
             }
             .exceptionHandling { exceptions ->

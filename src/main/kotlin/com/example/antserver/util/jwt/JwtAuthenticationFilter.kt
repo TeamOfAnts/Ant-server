@@ -23,32 +23,25 @@ class JwtAuthenticationFilter(
         response: HttpServletResponse,
         filterChain: FilterChain,
     ) {
-        if ( isExcludedPath(request.servletPath) ) {
+        try{
+            val accessToken = checkAccessToken(request)
+            authenticateUser(accessToken)
+        }catch (ex: AuthenticationException){
+            // NOTE: access token 만료 에러의 경우 refresh를 해야하기 때문에 throw한다.
+            if(ex.message == "Access token이 만료되었습니다."){
+                throw ex
+            }
+        }finally {
             filterChain.doFilter(request, response)
-            return
         }
-
-        val accessToken = checkAccessToken(request)
-        authenticateUser(accessToken)
-        filterChain.doFilter(request, response)
-    }
-
-    fun isExcludedPath(path: String): Boolean {
-        val excludedPaths = listOf("/h2-console", "/h2-console/**", "/health", "/users/auth", "/auth/refresh")
-        return excludedPaths.any { path.startsWith(it) }
     }
 
     fun checkAccessToken(request: HttpServletRequest): String {
-        return try {
-            jwtTokenManager.getAccessToken(request).takeIf(jwtTokenManager::isTokenValid)
+            return jwtTokenManager.getAccessToken(request).takeIf(jwtTokenManager::isTokenValid)
                 ?: run {
                     logger.warn("The access token has expired.")
                     throw AuthenticationException("Access token이 만료되었습니다.")
                 }
-        } catch (ex: AuthenticationException) {
-            request.setAttribute("customAuthErrorMessage", ex.message)
-            throw ex
-        }
     }
 
     fun authenticateUser(accessToken: String) {
