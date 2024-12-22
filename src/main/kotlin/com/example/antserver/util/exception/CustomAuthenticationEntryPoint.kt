@@ -9,22 +9,22 @@ import org.springframework.stereotype.Component
 @Component
 class CustomAuthenticationEntryPoint: AuthenticationEntryPoint {
     override fun commence(
-        request: HttpServletRequest?,
-        response: HttpServletResponse?,
-        authException: AuthenticationException?
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        authException: AuthenticationException
     ) {
-        val errorMessage = request?.getAttribute("customAuthErrorMessage") as String?
+        val errorMessage = request.getAttribute("customAuthErrorMessage") as String?
             ?: "인증 오류입니다."
-        response?.contentType = "application/json"
-        response?.characterEncoding = "UTF-8"
-        response?.status = HttpServletResponse.SC_UNAUTHORIZED
-        response?.writer?.write("""
+        response.contentType = "application/json"
+        response.characterEncoding = "UTF-8"
+        response.status = HttpServletResponse.SC_UNAUTHORIZED
+        response.writer.write("""
             {
                 "data": {
                     "errorMessage": "$errorMessage"
                 }
             }
         """.trimIndent())
-        response?.writer?.flush()
+        response.writer.flush()
     }
 }

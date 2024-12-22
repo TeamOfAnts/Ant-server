@@ -28,7 +28,7 @@ data class RefreshToken(
         }
     }
 
-    fun update(token: String) {
-        this.token = token
+    fun update(newToken: String) {
+        this.token = newToken
     }
 }
