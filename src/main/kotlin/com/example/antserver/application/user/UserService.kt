@@ -109,10 +109,10 @@ class UserService(
     }
 
     @Transactional
-    fun updateUser(userId: UUID, newName: String): User {
+    fun updateUser(userId: UUID, newName: String) {
         val user = findUser(userId)
         user.updateName(newName)
-        return userRepository.save(user)
+        userRepository.save(user)
     }
 
     fun findUser(userId: UUID): User {
