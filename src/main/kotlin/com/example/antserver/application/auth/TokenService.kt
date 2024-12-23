@@ -44,8 +44,7 @@ class TokenService(
         assert(isTokenValid(refreshToken)) {
             throw ApplicationException(Status.Unauthorized, "The Refresh Token($refreshToken) for the user with userId($userId) has expired.", "인증 오류입니다.")
         }
-        refreshTokenRepository.findByToken(refreshToken)
-            ?: throw ApplicationException(Status.Unauthorized, "The Refresh Token($refreshToken) does not exist.", "인증 오류입니다.")
+        findByToken(refreshToken)
         return createAccessToken(userId)
     }
 
@@ -54,5 +53,10 @@ class TokenService(
             ?.apply { update(newRefreshToken) }
             ?: RefreshToken.of(userId, newRefreshToken)
         refreshTokenRepository.save(refreshToken)
+    }
+
+    fun findByToken(token: String): RefreshToken {
+        return refreshTokenRepository.findByToken(token)
+            ?: throw ApplicationException(Status.Unauthorized, "The Refresh Token $token does not exist.", "인증 오류입니다.")
     }
 }
