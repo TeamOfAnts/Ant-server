@@ -1,5 +1,6 @@
 package com.example.antserver.presentation.auth
 
+import com.example.antserver.application.auth.TokenService
 import com.example.antserver.util.jwt.JwtTokenManager
 import com.example.antserver.presentation.auth.dto.RefreshRequest
 import com.example.antserver.presentation.auth.dto.RefreshResponse
@@ -15,6 +16,7 @@ import java.util.*
 @RequestMapping("auth")
 class AuthController(
     private val jwtTokenManager: JwtTokenManager,
+    private val tokenService: TokenService
 ) {
 
     @GetMapping("/refresh")
@@ -24,7 +26,7 @@ class AuthController(
     ): CommonResponse<RefreshResponse> {
         val currentAccessToken = jwtTokenManager.getAccessToken(request)
         val userId = UUID.fromString(jwtTokenManager.parseClaimsWithoutVerify(currentAccessToken))
-        val newAccessToken = jwtTokenManager.refreshAccessToken(userId, refreshRequest.refreshToken)
+        val newAccessToken = tokenService.refreshAccessToken(userId, refreshRequest.refreshToken)
         return CommonResponse(RefreshResponse.of(newAccessToken))
     }
 }

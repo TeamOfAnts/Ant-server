@@ -1,6 +1,6 @@
 package com.example.antserver.application.user
 
-import com.example.antserver.util.jwt.JwtTokenManager
+import com.example.antserver.application.auth.TokenService
 import com.example.antserver.domain.user.ProviderType
 import org.springframework.stereotype.Service
 import com.example.antserver.domain.user.User
@@ -11,9 +11,8 @@ import com.example.antserver.presentation.user.dto.GoogleProfileResponse
 import com.example.antserver.presentation.user.dto.UserAuthRequest
 import com.example.antserver.presentation.user.dto.UserAuthResponse
 import com.example.antserver.util.config.GoogleOAuthProperties
-import com.example.antserver.util.exception.AuthenticationException
-import com.example.antserver.util.exception.EmptyResultException
-import com.example.antserver.util.log.logger
+import com.example.antserver.util.exception.ApplicationException
+import com.example.antserver.util.response.Status
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import org.springframework.http.HttpEntity
@@ -28,10 +27,9 @@ import java.util.*
 @Service
 class UserService(
     private val userRepository: UserRepository,
-    private val jwtTokenManager: JwtTokenManager,
     private val googleOAuthProperties: GoogleOAuthProperties,
+    private val tokenService: TokenService,
     ) {
-    private val logger = logger()
 
     @Transactional
     suspend fun authenticateUser(userAuthRequest: UserAuthRequest): UserAuthResponse = coroutineScope {
@@ -39,15 +37,15 @@ class UserService(
         val (userId, isNew) = authenticateByEmailOrRegister(googleUser, userAuthRequest.provider)
 
         val deferredNewRefreshToken = async {
-            jwtTokenManager.createRefreshToken()
+            tokenService.createRefreshToken()
         }
         val deferredNewAccessToken = async {
-            jwtTokenManager.createAccessToken(userId)
+            tokenService.createAccessToken(userId)
         }
         val newRefreshToken = deferredNewRefreshToken.await()
         val newAccessToken = deferredNewAccessToken.await()
 
-        jwtTokenManager.refreshRefreshToken(userId, newRefreshToken)
+        tokenService.updateRefreshToken(userId, newRefreshToken)
 
         return@coroutineScope UserAuthResponse.of(newAccessToken, newRefreshToken, isNew)
     }
@@ -79,10 +77,7 @@ class UserService(
             googleTokenRequest,
             GoogleAccessTokenResponse::class.java
         ).body?.idToken
-            ?: run {
-                logger.warn("Invalid Authorization Code ($authorizationCode)")
-                throw AuthenticationException("")
-            }
+            ?: throw ApplicationException(Status.Unauthorized, "Invalid Authorization Code ($authorizationCode)", "인증 오류입니다.")
     }
 
     fun getGoogleProfile(googleJwtToken: String): GoogleProfileResponse {
@@ -90,11 +85,7 @@ class UserService(
             googleOAuthProperties.userInfoUrl.replace("{idToken}", googleJwtToken),
             GoogleProfileResponse::class.java
         ).body?.takeIf { it.emailVerified }
-            ?: run {
-                logger.warn("Can't get google profile from ${googleOAuthProperties.userInfoUrl} with $googleJwtToken")
-                throw EmptyResultException("")
-            }
-
+            ?: throw ApplicationException(Status.Unauthorized, "Can't get google profile from ${googleOAuthProperties.userInfoUrl} with $googleJwtToken", "인증 오류입니다.")
     }
 
     fun authenticateByEmailOrRegister(googleUser: GoogleProfileResponse, provider: ProviderType): Pair<UUID, Boolean> {
@@ -126,9 +117,6 @@ class UserService(
 
     fun findUser(userId: UUID): User {
         return userRepository.findById(userId)
-            ?: run {
-                logger.warn("User not exists with id: $userId")
-                throw EmptyResultException("유저를 찾을 수 없습니다.")
-            }
+            ?: throw ApplicationException(Status.NotFound, "User not exists with id: $userId", "유저를 찾을 수 없습니다.")
     }
 }
