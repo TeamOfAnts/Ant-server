@@ -23,13 +23,6 @@ class JwtTokenManager(
             ?: throw ApplicationException(Status.Unauthorized, "Unable to parse the userId from the Access Token.", "인증 오류입니다.")
     }
 
-    fun parseClaimsWithoutVerify(accessToken: String): String {
-        return JWT.decode(accessToken)
-            .getClaim(jwtProperties.claim)
-            ?.asString()
-            ?: throw ApplicationException(Status.Unauthorized, "Unable to parse the userId from the Access Token.", "인증 오류입니다.")
-    }
-
     fun getAccessToken(request: HttpServletRequest): String {
         return request.getHeader(HttpHeaders.AUTHORIZATION)
             .takeIf { it.startsWith(jwtProperties.bearerPrefix) }
