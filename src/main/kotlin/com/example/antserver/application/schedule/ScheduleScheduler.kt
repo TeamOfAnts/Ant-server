@@ -6,6 +6,7 @@ import com.example.antserver.util.response.Status
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 
 @Component
@@ -20,7 +21,7 @@ class ScheduleScheduler(
         val lastPollDate = lastPoll.createdAt
         val lastPollId = lastPoll.id
             ?: throw ApplicationException(Status.ServerError, "Poll does not exists", "")
-        val today = LocalDate.now()
+        val today = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()
 
         if (ChronoUnit.DAYS.between(lastPollDate, today) == 3L) {
             scheduleService.updateScheduleStatus(lastPollId)
