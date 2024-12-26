@@ -2,7 +2,6 @@ package com.example.antserver.infrastructure.schedule
 
 import com.example.antserver.domain.schedule.Schedule
 import com.example.antserver.domain.schedule.ScheduleRepository
-import com.example.antserver.util.exception.EmptyResultException
 import org.springframework.stereotype.Repository
 
 @Repository

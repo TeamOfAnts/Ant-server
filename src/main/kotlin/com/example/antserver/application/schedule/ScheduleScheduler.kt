@@ -1,7 +1,8 @@
 package com.example.antserver.application.schedule
 
 import com.example.antserver.domain.poll.PollRepository
-import com.example.antserver.util.exception.EmptyResultException
+import com.example.antserver.util.exception.ApplicationException
+import com.example.antserver.util.response.Status
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.time.LocalDate
@@ -18,7 +19,7 @@ class ScheduleScheduler(
         val lastPoll = pollRepository.findLast()
         val lastPollDate = lastPoll.createdAt
         val lastPollId = lastPoll.id
-            ?: throw EmptyResultException("")
+            ?: throw ApplicationException(Status.ServerError, "Poll does not exists", "")
         val today = LocalDate.now()
 
         if (ChronoUnit.DAYS.between(lastPollDate, today) == 3L) {

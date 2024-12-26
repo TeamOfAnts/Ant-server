@@ -4,7 +4,8 @@ import com.example.antserver.domain.poll.PollGeneratedEvent
 import com.example.antserver.domain.schedule.Schedule
 import com.example.antserver.domain.schedule.ScheduleRepository
 import com.example.antserver.domain.schedule.ScheduleStatus
-import com.example.antserver.util.exception.EmptyResultException
+import com.example.antserver.util.exception.ApplicationException
+import com.example.antserver.util.response.Status
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
@@ -49,7 +50,7 @@ class ScheduleService(
 
     fun findSchedulesByPollId(pollId: Long): List<Schedule> {
         return scheduleRepository.findAllByPollId(pollId)
-            .takeIf { it.isNotEmpty() } ?: throw EmptyResultException("{$pollId}번 투표에 대한 스케쥴이 없습니다.")
+            .takeIf { it.isNotEmpty() } ?: throw ApplicationException(Status.ServerError, "There is no schedule for poll number ${pollId}.", "${pollId}번 투표에 대한 스케쥴이 없습니다.")
     }
 
     @Transactional
