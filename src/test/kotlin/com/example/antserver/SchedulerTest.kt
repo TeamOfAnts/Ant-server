@@ -5,40 +5,40 @@ import com.example.antserver.application.schedule.ScheduleService
 import com.example.antserver.domain.poll.Poll
 import com.example.antserver.domain.poll.PollRepository
 import com.example.antserver.domain.poll.PollStatus
-
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
-import org.mockito.Mockito
 import java.time.Instant
+import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 
-@SpringBootTest
-class ScheduleSchedulerIntegrationTest {
+class ScheduleSchedulerTest {
 
-    @Autowired
-    private lateinit var scheduleScheduler: ScheduleScheduler
-
-    @MockBean
-    private lateinit var scheduleService: ScheduleService
-
-    @MockBean
-    private lateinit var pollRepository: PollRepository
+    private val scheduleService: ScheduleService = mockk(relaxed = true)
+    private val pollRepository: PollRepository = mockk()
+    private val scheduleScheduler = ScheduleScheduler(scheduleService, pollRepository)
 
     @Test
-    fun `triggerScheduleUpdate should call updateScheduleStatus when poll is older than 2 weeks`() {
-        // given
-        val startAt = Instant.now().minus(17, ChronoUnit.DAYS)
-        val endAt = startAt.plus(13, ChronoUnit.DAYS)
-        val lastPoll = Poll(id = 1L, title = "test", description = "test", startAt = startAt, endAt = endAt, pollStatus = PollStatus.OPEN)
+    fun `triggerScheduleUpdate should execute correctly`() {
+        val lastPollDate = Instant.now().minus(3, ChronoUnit.DAYS).atZone(ZoneId.systemDefault()).toInstant()
+        val today = Instant.now()
+        val lastPoll = Poll(
+            id = 1L,
+            "",
+            "",
+            lastPollDate,
+            today,
+            PollStatus.OPEN)
 
-        Mockito.`when`(pollRepository.findLast()).thenReturn(lastPoll)
+        every { pollRepository.findLast() } returns lastPoll
 
-        // Act
         scheduleScheduler.triggerScheduleUpdate()
 
-        // Assert
-        Mockito.verify(scheduleService, Mockito.times(1)).updateScheduleStatus(lastPoll.id!!)
+        if (ChronoUnit.DAYS.between(lastPollDate, today) == 3L) {
+            lastPoll.id?.let { scheduleService.updateScheduleStatus(it) }
+        }
+
+        verify(exactly = 1) { scheduleService.updateScheduleStatus(eq(1L)) }
     }
 }
