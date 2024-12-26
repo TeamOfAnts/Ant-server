@@ -1,8 +1,10 @@
 package com.example.antserver.application
 
-import com.example.antserver.util.jwt.JwtTokenManager
+import com.example.antserver.application.auth.TokenService
 import com.example.antserver.domain.auth.RefreshToken
 import com.example.antserver.domain.auth.RefreshTokenRepository
+import com.example.antserver.util.exception.ApplicationException
+import com.example.antserver.util.jwt.JwtTokenManager
 import com.fasterxml.uuid.Generators
 import io.mockk.every
 import io.mockk.mockk
@@ -19,9 +21,11 @@ import java.util.*
 @SpringBootTest
 //@DataJpaTest
 //@Import(TestConfiguration::class) TODO 테스트용 필요한 빈만 넣어두는 TestConfiguration 추가
-class JwtTokenManagerTest {
+class TokenTest {
     @Autowired
     private lateinit var refreshTokenRepository: RefreshTokenRepository
+    @Autowired
+    private lateinit var tokenService: TokenService
     @Autowired
     private lateinit var jwtTokenManager: JwtTokenManager
     private val userId = Generators.timeBasedEpochGenerator().generate()
@@ -31,7 +35,7 @@ class JwtTokenManagerTest {
     @DisplayName("Access Token에서 userId를 추출한다")
     fun parseClaim() {
         // given
-        val accessToken = jwtTokenManager.createAccessToken(userId)
+        val accessToken = tokenService.createAccessToken(userId)
 
         // when
         val parsedUserId = UUID.fromString(jwtTokenManager.parseClaims(accessToken))
@@ -44,7 +48,7 @@ class JwtTokenManagerTest {
     @DisplayName("request에서 Access Token을 추출한다")
     fun getAccessToken() {
         // given
-        val accessToken = jwtTokenManager.createAccessToken(userId)
+        val accessToken = tokenService.createAccessToken(userId)
         every { mockRequest.getHeader(HttpHeaders.AUTHORIZATION) } returns "Bearer $accessToken"
 
         // when
@@ -59,11 +63,11 @@ class JwtTokenManagerTest {
     fun renewAccessTokenWhenRefreshTokenIsValid() {
         // given
         val userId = UUID.randomUUID()
-        val refreshToken = jwtTokenManager.createRefreshToken()
+        val refreshToken = tokenService.createRefreshToken()
         refreshTokenRepository.save(RefreshToken.of(userId, refreshToken))
 
         // when
-        val accessToken = jwtTokenManager.refreshAccessToken(userId, refreshToken)
+        val accessToken = tokenService.refreshAccessToken(userId, refreshToken)
 
         // then
         val parsedUserId = UUID.fromString(jwtTokenManager.parseClaims(accessToken))
@@ -71,56 +75,38 @@ class JwtTokenManagerTest {
     }
 
     @Test
-    @DisplayName("refresh Token이 만료되면 AuthenticationException을 Throw한다")
+    @DisplayName("refresh Token이 만료되면 access token 재발급 시 ApplicationException을 Throw한다")
     fun failToRenewAccessTokenWhenRefreshTokenIsExpired() {
         // given
         val userId = UUID.randomUUID()
-        val refreshToken = jwtTokenManager.createRefreshToken()
+        val refreshToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBY2Nlc3NUb2tlbiIsImV4cCI6MTczNDExNzk1NiwidXNlcklkIjoiMDE5M2MxNDUtMmRmNy03MzE4LTk3ZTItZTQzYWQ4M2FkMzNjIn0.ya2CDWDq40aJQNSS2nN8K6328-M5baNB7IFEZXxNlwznXXFmypFGlsRpaar_n5CPtwNoKue3Hc7NteH3Xf2udw"
 
         // when & then
-        assertThrows<AuthenticationException> {
-            jwtTokenManager.refreshAccessToken(userId, refreshToken)
+        assertThrows<ApplicationException> {
+            tokenService.refreshAccessToken(userId, refreshToken)
         }
     }
 
     @Test
-    @DisplayName("token이 유효하면 true를 반환한다")
+    @DisplayName("token이 유효하면 에러가 발생하지 않는다")
     fun returnTrueIfTokenIsValid() {
         // given
         val userId = UUID.randomUUID()
-        val accessToken = jwtTokenManager.createAccessToken(userId)
+        val accessToken = tokenService.createAccessToken(userId)
 
-        // when
-        val isValid = jwtTokenManager.isTokenValid(accessToken)
-
-        // then
-        assertThat(isValid).isTrue()
+        // when & then
+        tokenService.isTokenValid(accessToken)
     }
 
     @Test
-    @DisplayName("token이 만료되면 false를 반환한다")
+    @DisplayName("access Token이 만료되면 ApplicationException을 Throw한다")
     fun returnFalseIfTokenIsExpired() {
         // given
         val accessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBY2Nlc3NUb2tlbiIsImV4cCI6MTczNDExNzk1NiwidXNlcklkIjoiMDE5M2MxNDUtMmRmNy03MzE4LTk3ZTItZTQzYWQ4M2FkMzNjIn0.ya2CDWDq40aJQNSS2nN8K6328-M5baNB7IFEZXxNlwznXXFmypFGlsRpaar_n5CPtwNoKue3Hc7NteH3Xf2udw"
 
-        // when
-        val isValid = jwtTokenManager.isTokenValid(accessToken)
-
-        // then
-        assertThat(isValid).isFalse()
-    }
-
-    @Test
-    @DisplayName("만료된 Access Token에서 userId를 추출한다")
-    fun parseClaimWithoutVerify() {
-        // given
-        val userId = "0193c145-2df7-7318-97e2-e43ad83ad33c"
-        val accessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBY2Nlc3NUb2tlbiIsImV4cCI6MTczNDExNzk1NiwidXNlcklkIjoiMDE5M2MxNDUtMmRmNy03MzE4LTk3ZTItZTQzYWQ4M2FkMzNjIn0.ya2CDWDq40aJQNSS2nN8K6328-M5baNB7IFEZXxNlwznXXFmypFGlsRpaar_n5CPtwNoKue3Hc7NteH3Xf2udw"
-
-        // when
-        val parsedUserId = jwtTokenManager.parseClaimsWithoutVerify(accessToken)
-
-        // then
-        assertThat(parsedUserId).isEqualTo(userId)
+        // when & then
+        assertThrows<ApplicationException> {
+            tokenService.isTokenValid(accessToken)
+        }
     }
 }
