@@ -8,7 +8,6 @@ data class UserDetailResponse(
     val name: String,
     val email: String,
     val provider: ProviderType,
-    val providerId: String,
     val role: UserRoleType,
 ) {
     companion object {
@@ -17,7 +16,6 @@ data class UserDetailResponse(
                 user.name,
                 user.email,
                 user.provider,
-                user.providerId,
                 user.role
             )
         }
