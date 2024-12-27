@@ -18,8 +18,8 @@ class ScheduleScheduler(
     @Scheduled(cron = "0 0 18 ? * TUE", zone = "Asia/Seoul")
     fun triggerScheduleUpdate() {
         val lastPoll = pollRepository.findLast()
-        val lastPollDate = lastPoll.createdAt
-        val lastPollId = lastPoll.id
+        val lastPollDate = lastPoll?.createdAt
+        val lastPollId = lastPoll?.id
             ?: throw ApplicationException(Status.ServerError, "Poll does not exists", "")
         val today = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()
 

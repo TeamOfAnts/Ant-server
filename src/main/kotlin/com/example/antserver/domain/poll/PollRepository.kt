@@ -6,5 +6,5 @@ import org.springframework.data.domain.Pageable
 interface PollRepository {
     fun save(poll: Poll): Poll
     fun findAllByPollStatus(status: PollStatus, pageable: Pageable): Page<Poll>
-    fun findLast(): Poll
+    fun findLast(): Poll?
 }
