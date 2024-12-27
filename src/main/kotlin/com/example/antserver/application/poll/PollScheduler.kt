@@ -15,7 +15,7 @@ class PollScheduler(
 
     @Scheduled(cron = "0 0 18 ? * SUN", zone = "Asia/Seoul")
     fun triggerPollGeneration() {
-        val lastPollDate = pollRepository.findLast().createdAt
+        val lastPollDate = pollRepository.findLast()?.createdAt
         val today = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()
 
         if (lastPollDate == null || ChronoUnit.WEEKS.between(lastPollDate, today) >= 2) {
