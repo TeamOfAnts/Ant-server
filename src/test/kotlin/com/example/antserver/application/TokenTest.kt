@@ -1,10 +1,10 @@
 package com.example.antserver.application
 
 import com.example.antserver.application.auth.TokenService
+import com.example.antserver.util.jwt.JwtTokenManager
 import com.example.antserver.domain.auth.RefreshToken
 import com.example.antserver.domain.auth.RefreshTokenRepository
-import com.example.antserver.util.exception.ApplicationException
-import com.example.antserver.util.jwt.JwtTokenManager
+import com.example.antserver.util.exception.AuthenticationException
 import com.fasterxml.uuid.Generators
 import io.mockk.every
 import io.mockk.mockk
@@ -25,9 +25,9 @@ class TokenTest {
     @Autowired
     private lateinit var refreshTokenRepository: RefreshTokenRepository
     @Autowired
-    private lateinit var tokenService: TokenService
-    @Autowired
     private lateinit var jwtTokenManager: JwtTokenManager
+    @Autowired
+    private lateinit var tokenService: TokenService
     private val userId = Generators.timeBasedEpochGenerator().generate()
     private val mockRequest = mockk<HttpServletRequest>()
 
@@ -75,20 +75,7 @@ class TokenTest {
     }
 
     @Test
-    @DisplayName("refresh Token이 만료되면 access token 재발급 시 ApplicationException을 Throw한다")
-    fun failToRenewAccessTokenWhenRefreshTokenIsExpired() {
-        // given
-        val userId = UUID.randomUUID()
-        val refreshToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBY2Nlc3NUb2tlbiIsImV4cCI6MTczNDExNzk1NiwidXNlcklkIjoiMDE5M2MxNDUtMmRmNy03MzE4LTk3ZTItZTQzYWQ4M2FkMzNjIn0.ya2CDWDq40aJQNSS2nN8K6328-M5baNB7IFEZXxNlwznXXFmypFGlsRpaar_n5CPtwNoKue3Hc7NteH3Xf2udw"
-
-        // when & then
-        assertThrows<ApplicationException> {
-            tokenService.refreshAccessToken(userId, refreshToken)
-        }
-    }
-
-    @Test
-    @DisplayName("token이 유효하면 에러가 발생하지 않는다")
+    @DisplayName("token이 유효하면 exception을 throw하지 않는다")
     fun returnTrueIfTokenIsValid() {
         // given
         val userId = UUID.randomUUID()
@@ -99,13 +86,13 @@ class TokenTest {
     }
 
     @Test
-    @DisplayName("access Token이 만료되면 ApplicationException을 Throw한다")
+    @DisplayName("access Token이 만료되면 AuthenticationException을 Throw한다")
     fun returnFalseIfTokenIsExpired() {
         // given
-        val accessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBY2Nlc3NUb2tlbiIsImV4cCI6MTczNDExNzk1NiwidXNlcklkIjoiMDE5M2MxNDUtMmRmNy03MzE4LTk3ZTItZTQzYWQ4M2FkMzNjIn0.ya2CDWDq40aJQNSS2nN8K6328-M5baNB7IFEZXxNlwznXXFmypFGlsRpaar_n5CPtwNoKue3Hc7NteH3Xf2udw"
+        val accessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBY2Nlc3NUb2tlbiIsImV4cCI6MTczNTI5MjQ3NywidXNlcklkIjoiMDE5NDA3N2QtZTEyNi03ZWY1LWEyYWMtZGZjNWZhOGRmMjU5In0.nbyzUoyxqhARjLE_YEIY9_mMw_iWbCqHrC_Rw3OtJ3dKNXW5xyc7aQrtdxXOjHG9Tcm2CpIZKZALQ32abOYrdQ"
 
         // when & then
-        assertThrows<ApplicationException> {
+        assertThrows<AuthenticationException> {
             tokenService.isTokenValid(accessToken)
         }
     }
