@@ -2,12 +2,12 @@ package com.example.antserver.application.auth
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import com.auth0.jwt.exceptions.JWTDecodeException
 import com.auth0.jwt.exceptions.TokenExpiredException
 import com.example.antserver.domain.auth.RefreshToken
 import com.example.antserver.domain.auth.RefreshTokenRepository
 import com.example.antserver.util.config.JwtProperties
 import com.example.antserver.util.exception.ApplicationException
+import com.example.antserver.util.exception.AuthenticationException
 import com.example.antserver.util.response.Status
 import org.springframework.stereotype.Service
 import java.time.Instant
@@ -23,8 +23,9 @@ class TokenService(
         try {
             val algorithm = Algorithm.HMAC512(jwtProperties.secret)
             JWT.require(algorithm).build().verify(token)
+
         } catch (exception: TokenExpiredException) {
-            throw ApplicationException(Status.Unauthorized, "The token has expired.", "Access token이 만료되었습니다.")
+            throw AuthenticationException("Access token이 만료되었습니다.")
         } catch (exception: Exception) {
             throw ApplicationException(Status.BadRequest, exception.message, "인증 오류입니다.")
         }
@@ -48,7 +49,6 @@ class TokenService(
     }
 
     fun refreshAccessToken(userId: UUID, refreshToken: String): String {
-        isTokenValid(refreshToken)
         findByToken(refreshToken)
         return createAccessToken(userId)
     }

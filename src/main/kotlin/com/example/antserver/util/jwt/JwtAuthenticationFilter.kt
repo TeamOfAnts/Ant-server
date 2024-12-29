@@ -10,6 +10,7 @@ import java.util.*
 
 import com.example.antserver.domain.user.UserRepository
 import com.example.antserver.util.exception.ApplicationException
+import com.example.antserver.util.exception.AuthenticationException
 import com.example.antserver.util.response.Status
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
@@ -21,29 +22,21 @@ class JwtAuthenticationFilter(
     private val userRepository: UserRepository
 ): OncePerRequestFilter() {
 
-    override fun shouldNotFilter(request: HttpServletRequest): Boolean {
-        val excludedPaths = listOf("/health", "/users/auth", "/auth/refresh")
-        return excludedPaths.any { request.servletPath.startsWith(it) }
-    }
-
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
         filterChain: FilterChain,
     ) {
-
         try {
             val accessToken = jwtTokenManager.getAccessToken(request)
             tokenService.isTokenValid(accessToken)
             authenticateUser(accessToken)
-        } catch (exception: ApplicationException) {
-            // NOTE: access token 만료 에러의 경우 refresh를 해야하기 때문에 throw한다.
-            if (exception.status == Status.Unauthorized) {
-                throw exception
-            }
-        } finally {
-            filterChain.doFilter(request, response)
+        } catch (exception: AuthenticationException) {
+            // NOTE: access token 만료 에러의 경우 refresh를 해야하기 때문에 return한다.
+            writeJsonErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, exception.message!!)
+            return
         }
+        filterChain.doFilter(request, response)
     }
 
     fun authenticateUser(accessToken: String) {
@@ -62,5 +55,24 @@ class JwtAuthenticationFilter(
             userDetails.authorities
         )
         SecurityContextHolder.getContext().authentication = authentication
+    }
+
+    fun writeJsonErrorResponse(
+        response: HttpServletResponse,
+        status: Int,
+        errorMessage: String
+    ) {
+        response.contentType = "application/json"
+        response.characterEncoding = "UTF-8"
+        response.status = status
+        response.writer.write("""
+        {
+            "data": {
+                "errorMessage": "$errorMessage"
+            }
+        }
+        """.trimIndent()
+        )
+        response.writer.flush()
     }
 }
