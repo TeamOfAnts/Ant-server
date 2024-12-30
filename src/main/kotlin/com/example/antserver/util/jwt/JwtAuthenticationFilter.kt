@@ -32,8 +32,12 @@ class JwtAuthenticationFilter(
             tokenService.isTokenValid(accessToken)
             authenticateUser(accessToken)
         } catch (exception: AuthenticationException) {
-            // NOTE: access token 만료 에러의 경우 refresh를 해야하기 때문에 return한다.
-            writeJsonErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, exception.message!!)
+            // NOTE: access token 만료 에러의 경우 refresh 해야하기 때문에 errorResponse를 return한다.
+            writeJsonErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, exception.message)
+            return
+        } catch (exception: NullPointerException) {
+            // NOTE: access token 없이 허용된 요청도 filter chain 밖으로 에러가 전파되기 때문에 catch해서 doFilter한다.
+            filterChain.doFilter(request, response)
             return
         }
         filterChain.doFilter(request, response)
