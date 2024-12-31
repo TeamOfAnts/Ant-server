@@ -1,5 +1,6 @@
 package com.example.antserver.infrastructure.user
 
+import com.example.antserver.domain.user.ProviderType
 import com.example.antserver.domain.user.User
 import com.example.antserver.domain.user.UserRepository
 import org.springframework.stereotype.Repository
@@ -17,7 +18,7 @@ class UserRepositoryImpl(
         return jpaUserRepository.findById(userId).orElse(null)
     }
 
-    override fun findByEmail(email: String): User? {
-        return jpaUserRepository.findByEmail(email)
+    override fun findByEmailAndProvider(email: String, provider: ProviderType): User? {
+        return jpaUserRepository.findByEmailAndProvider(email, provider)
     }
 }
