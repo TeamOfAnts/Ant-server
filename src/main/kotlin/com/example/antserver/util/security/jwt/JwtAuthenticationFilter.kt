@@ -1,4 +1,4 @@
-package com.example.antserver.util.jwt
+package com.example.antserver.util.security.jwt
 
 import com.example.antserver.application.auth.TokenService
 import jakarta.servlet.FilterChain

@@ -1,7 +1,7 @@
 package com.example.antserver.presentation.user
 
 import UserNameRequest
-import com.example.antserver.util.jwt.JwtTokenManager
+import com.example.antserver.util.security.jwt.JwtTokenManager
 import com.example.antserver.application.user.UserService
 import org.springframework.web.bind.annotation.*
 import com.example.antserver.presentation.user.dto.UserAuthRequest

@@ -1,4 +1,4 @@
-package com.example.antserver.util.config
+package com.example.antserver.util.security.jwt
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 

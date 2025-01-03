@@ -5,10 +5,10 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.exceptions.TokenExpiredException
 import com.example.antserver.domain.auth.RefreshToken
 import com.example.antserver.domain.auth.RefreshTokenRepository
-import com.example.antserver.util.config.JwtProperties
 import com.example.antserver.util.exception.ApplicationException
 import com.example.antserver.util.exception.AuthenticationException
 import com.example.antserver.util.response.Status
+import com.example.antserver.util.security.jwt.JwtProperties
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.util.*
