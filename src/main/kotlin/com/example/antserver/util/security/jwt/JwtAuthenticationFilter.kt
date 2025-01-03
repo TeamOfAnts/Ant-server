@@ -1,4 +1,4 @@
-package com.example.antserver.util.jwt
+package com.example.antserver.util.security.jwt
 
 import com.example.antserver.application.auth.TokenService
 import jakarta.servlet.FilterChain
@@ -11,6 +11,7 @@ import com.example.antserver.domain.user.UserRepository
 import com.example.antserver.util.exception.ApplicationException
 import com.example.antserver.util.exception.AuthenticationException
 import com.example.antserver.util.response.Status
+import com.example.antserver.util.response.writeErrorResponse
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 
@@ -31,8 +32,12 @@ class JwtAuthenticationFilter(
             tokenService.isTokenValid(accessToken)
             authenticateUser(accessToken)
         } catch (exception: AuthenticationException) {
-            // NOTE: access token 만료 에러의 경우 refresh를 해야하기 때문에 return한다.
-            writeJsonErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, exception.message!!)
+            // NOTE: access token 만료 에러의 경우 refresh 해야하기 때문에 에러 응답을 생성한다.
+            writeErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, exception.message)
+            return
+        } catch (exception: NullPointerException) {
+            // NOTE: access token 없이 허용된 요청도 filter chain 밖으로 에러가 전파되기 때문에 catch해서 doFilter한다.
+            filterChain.doFilter(request, response)
             return
         }
         filterChain.doFilter(request, response)
@@ -54,24 +59,5 @@ class JwtAuthenticationFilter(
             userDetails.authorities
         )
         SecurityContextHolder.getContext().authentication = authentication
-    }
-
-    fun writeJsonErrorResponse(
-        response: HttpServletResponse,
-        status: Int,
-        errorMessage: String
-    ) {
-        response.contentType = "application/json"
-        response.characterEncoding = "UTF-8"
-        response.status = status
-        response.writer.write("""
-        {
-            "data": {
-                "errorMessage": "$errorMessage"
-            }
-        }
-        """.trimIndent()
-        )
-        response.writer.flush()
     }
 }

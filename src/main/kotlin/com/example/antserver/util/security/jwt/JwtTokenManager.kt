@@ -1,10 +1,9 @@
-package com.example.antserver.util.jwt
+package com.example.antserver.util.security.jwt
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpHeaders
-import com.example.antserver.util.config.JwtProperties
 import com.example.antserver.util.exception.ApplicationException
 import com.example.antserver.util.response.Status
 import org.springframework.stereotype.Component
