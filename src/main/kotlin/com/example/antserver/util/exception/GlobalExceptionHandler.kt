@@ -15,18 +15,17 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception::class)
     fun handleException(exception: Exception): ResponseEntity<CommonResponse<ExceptionResponse>> {
-        val errorMessage = exception.message ?: "예상하지 못 한 오류가 발생했습니다."
-        val status = when (exception) {
-            is ApplicationException -> exception.status.toHttpStatus()
-            else -> HttpStatus.INTERNAL_SERVER_ERROR
+        val (serverErrorMessage, status) = when (exception) {
+            is ApplicationException -> Pair(exception.serverMessage, exception.status.toHttpStatus())
+            else -> Pair(exception.message, HttpStatus.INTERNAL_SERVER_ERROR)
         }
+        logger.error(serverErrorMessage)
 
-        logger.error(errorMessage)
-
+        val clientErrorMessage = exception.message ?: "예상하지 못 한 오류가 발생했습니다."
         return ResponseEntity.status(status).body(
             CommonResponse(
                 data = ExceptionResponse(
-                    errorMessage = errorMessage
+                    errorMessage = clientErrorMessage
                 )
             )
         )
