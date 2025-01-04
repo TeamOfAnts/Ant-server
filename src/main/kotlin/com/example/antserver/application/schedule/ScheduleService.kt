@@ -44,9 +44,10 @@ class ScheduleService(
             val newStatus = if (schedule.voters.size >= 3) ScheduleStatus.CONFIRMED else ScheduleStatus.DROPPED
             schedule.copy(scheduleStatus = newStatus)
         }
-
         scheduleRepository.saveAll(updatedSchedules)
-        applicationEventPublisher.publishEvent(ScheduleStatusChangedEvent.from(updatedSchedules))
+
+        val confirmedSchedules = updatedSchedules.filter { it.scheduleStatus == ScheduleStatus.CONFIRMED }
+        applicationEventPublisher.publishEvent(ScheduleConfirmedEvent.of(confirmedSchedules))
     }
 
     fun findSchedulesByPollId(pollId: Long): List<Schedule> {

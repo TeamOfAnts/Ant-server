@@ -1,6 +1,6 @@
 package com.example.antserver.application.participation
 
-import com.example.antserver.application.schedule.ScheduleStatusChangedEvent
+import com.example.antserver.application.schedule.ScheduleConfirmedEvent
 import com.example.antserver.domain.participation.Participation
 import com.example.antserver.domain.participation.ParticipationRepository
 import com.example.antserver.domain.participation.ParticipationType
@@ -21,8 +21,8 @@ class ParticipationService(
 
     @Transactional
     @EventListener
-    fun saveParticipation(event: ScheduleStatusChangedEvent): List<Participation> {
-        val participations = event.confirmedScheduleVoters.flatMap { schedule ->
+    fun saveParticipation(event: ScheduleConfirmedEvent): List<Participation> {
+        val participations = event.confirmedSchedules.flatMap { schedule ->
             schedule.voters.map { userId ->
                 Participation.of(
                     scheduleId = schedule.id ?: throw ApplicationException(Status.ServerError, "Schedule id is null", ""),
