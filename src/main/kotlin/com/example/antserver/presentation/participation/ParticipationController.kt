@@ -2,8 +2,8 @@ package com.example.antserver.presentation.participation
 
 import com.example.antserver.application.participation.ParticipationService
 import com.example.antserver.presentation.participation.dto.ParticipationResponse
-import com.example.antserver.util.jwt.JwtTokenManager
 import com.example.antserver.util.response.CommonResponse
+import com.example.antserver.util.security.jwt.JwtTokenManager
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
