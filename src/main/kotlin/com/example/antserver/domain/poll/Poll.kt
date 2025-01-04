@@ -26,7 +26,7 @@ data class Poll(
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    val pollStatus: PollStatus,
+    var pollStatus: PollStatus,
 
     ): AggregateRoot() {
         companion object {
@@ -43,4 +43,8 @@ data class Poll(
                     pollStatus = pollStatus)
             }
         }
+
+    fun updateStatus(newStatus: PollStatus) {
+        pollStatus = newStatus
+    }
 }

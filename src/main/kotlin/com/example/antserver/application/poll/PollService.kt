@@ -4,6 +4,8 @@ import com.example.antserver.domain.poll.Poll
 import com.example.antserver.domain.poll.PollGeneratedEvent
 import com.example.antserver.domain.poll.PollRepository
 import com.example.antserver.domain.poll.PollStatus
+import com.example.antserver.util.exception.ApplicationException
+import com.example.antserver.util.response.Status
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -36,10 +38,18 @@ class PollService(
         pollRepository.save(poll)
         applicationEventPublisher.publishEvent(PollGeneratedEvent.of(poll.id!!, poll.startAt, poll.endAt))
         return poll
+
     }
 
     fun findPollsByStatus(status: PollStatus, page: Int, size: Int): Page<Poll> {
         val pageable = PageRequest.of(page, size, Sort.by("createdAt").descending())
         return pollRepository.findAllByPollStatus(status, pageable)
+    }
+
+    fun updatePollStatus(pollId: Long, status: PollStatus) {
+        val poll = pollRepository.findById(pollId)
+            ?: throw ApplicationException(Status.ServerError, "poll with id $pollId does not exist", "")
+        poll.updateStatus(status)
+        pollRepository.save(poll)
     }
 }
