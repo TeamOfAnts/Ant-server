@@ -17,7 +17,7 @@ class ScheduleController(
     private val jwtTokenManager: JwtTokenManager
 ) {
 
-    @GetMapping
+    @PostMapping
     fun findSchedulesByPollId(
         @RequestBody scheduleRequest: ScheduleRequest
     ): CommonResponse<List<ScheduleResponse>> {
