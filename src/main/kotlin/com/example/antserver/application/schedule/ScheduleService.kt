@@ -23,8 +23,9 @@ class ScheduleService(
     @EventListener
     @Transactional
     fun generateSchedules(event: PollGeneratedEvent): List<Schedule> {
-        val startDate = event.startAt
-        val schedules = (0L until ChronoUnit.DAYS.between(event.startAt, event.endAt))
+        val startDate = event.voteStartAt
+        val nextDayOfEndDate = event.voteEndAt.plus(1, ChronoUnit.DAYS)
+        val schedules = (0L until ChronoUnit.DAYS.between(startDate, nextDayOfEndDate))
             .map { days ->
                 Schedule.of(
                     pollId = event.pollId,
@@ -50,7 +51,7 @@ class ScheduleService(
 
     fun findSchedulesByPollId(pollId: Long): List<Schedule> {
         return scheduleRepository.findAllByPollId(pollId)
-            .takeIf { it.isNotEmpty() } ?: throw ApplicationException(Status.ServerError, "There is no schedule for poll number ${pollId}.", "${pollId}번 투표에 대한 스케쥴이 없습니다.")
+            .takeIf { it.isNotEmpty() } ?: throw ApplicationException(Status.BadRequest, "There is no schedule for poll number ${pollId}.", "${pollId}번 투표에 대한 스케쥴이 없습니다.")
     }
 
     @Transactional

@@ -16,6 +16,10 @@ class PollRepositoryImpl(
         return jpaPollRepository.save(poll)
     }
 
+    override fun findById(id: Long): Poll? {
+        return jpaPollRepository.findById(id).orElse(null)
+    }
+
     override fun findAllByPollStatus(status: PollStatus, pageable: Pageable): Page<Poll> {
         println(jpaPollRepository.findAllByPollStatus(status, pageable))
         return jpaPollRepository.findAllByPollStatus(status, pageable)

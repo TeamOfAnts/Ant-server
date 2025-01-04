@@ -1,7 +1,7 @@
 package com.example.antserver.application
 
 import com.example.antserver.application.auth.TokenService
-import com.example.antserver.util.jwt.JwtTokenManager
+import com.example.antserver.util.security.jwt.JwtTokenManager
 import com.example.antserver.domain.auth.RefreshToken
 import com.example.antserver.domain.auth.RefreshTokenRepository
 import com.example.antserver.util.exception.AuthenticationException

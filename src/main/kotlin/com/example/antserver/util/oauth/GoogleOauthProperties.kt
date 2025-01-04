@@ -1,4 +1,4 @@
-package com.example.antserver.util.config
+package com.example.antserver.util.oauth
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 

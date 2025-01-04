@@ -7,7 +7,7 @@ import java.time.Instant
 import java.util.UUID
 
 @Entity
-@Table(name = "`user`", uniqueConstraints = [UniqueConstraint(columnNames = ["email"])])
+@Table(name = "`user`", uniqueConstraints = [UniqueConstraint(columnNames = ["email", "provider"])])
 data class User(
     @Id
     @Column(name = "id")
@@ -16,7 +16,7 @@ data class User(
     @Column(name = "name")
     var name: String,
 
-    @Column(name = "email", unique = true)
+    @Column(name = "email")
     val email: String,
 
     @Column(name = "provider")

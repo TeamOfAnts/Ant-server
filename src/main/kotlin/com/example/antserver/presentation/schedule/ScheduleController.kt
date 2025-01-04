@@ -4,8 +4,8 @@ import com.example.antserver.application.schedule.ScheduleService
 import com.example.antserver.presentation.schedule.dto.ScheduleRequest
 import com.example.antserver.presentation.schedule.dto.ScheduleResponse
 import com.example.antserver.presentation.schedule.dto.VoteRequest
-import com.example.antserver.util.jwt.JwtTokenManager
 import com.example.antserver.util.response.CommonResponse
+import com.example.antserver.util.security.jwt.JwtTokenManager
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.web.bind.annotation.*
 import java.util.*
@@ -33,6 +33,6 @@ class ScheduleController(
         val accessToken = jwtTokenManager.getAccessToken(request)
         val userId = UUID.fromString(jwtTokenManager.parseClaims(accessToken))
         scheduleService.voteSchedules(userId, voteRequest.scheduleIds)
-        return CommonResponse("${voteRequest.scheduleIds}번 스케쥴에 정상 등록되었습니다.")
+        return CommonResponse("${voteRequest.scheduleIds}번 스케쥴에 투표했습니다.")
     }
 }

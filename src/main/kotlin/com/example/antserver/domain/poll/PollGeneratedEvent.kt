@@ -4,14 +4,14 @@ import java.time.Instant
 
 data class PollGeneratedEvent(
     val pollId: Long,
-    val startAt: Instant,
-    val endAt: Instant
+    val voteStartAt: Instant,
+    val voteEndAt: Instant
 ) {
     companion object {
         fun of(pollId: Long,
-               startAt: Instant,
-               endAt: Instant): PollGeneratedEvent {
-            return PollGeneratedEvent(pollId, startAt, endAt)
+               voteStartAt: Instant,
+               voteEndAt: Instant): PollGeneratedEvent {
+            return PollGeneratedEvent(pollId, voteStartAt, voteEndAt)
         }
     }
 }

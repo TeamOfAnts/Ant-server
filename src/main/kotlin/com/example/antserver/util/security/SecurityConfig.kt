@@ -1,9 +1,9 @@
-package com.example.antserver.util.config
+package com.example.antserver.util.security
 
 import com.example.antserver.util.exception.CustomAccessDeniedHandler
 import com.example.antserver.util.exception.CustomAuthenticationEntryPoint
 import com.example.antserver.util.exception.GlobalExceptionHandler
-import com.example.antserver.util.jwt.JwtAuthenticationFilter
+import com.example.antserver.util.security.jwt.JwtAuthenticationFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
