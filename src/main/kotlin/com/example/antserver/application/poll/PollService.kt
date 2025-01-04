@@ -12,7 +12,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.LocalDateTime
+import java.time.LocalDate
 import java.time.ZoneId
 
 @Service
@@ -23,22 +23,28 @@ class PollService(
 
     @Transactional
     fun generatePoll(): Poll {
-        val now = LocalDateTime.now()
-        val startDate = now.plusDays(3).toLocalDate()
-        val endDate = startDate.plusDays(14)
+        val pollStartDate = LocalDate.now() // 일
+        val pollEndDate = pollStartDate.plusDays(2) // 화
+        val voteStartDate = pollStartDate.plusDays(1) // 월
+        val voteEndDate = pollStartDate.plusDays(14) // 일
         val zoneId = ZoneId.systemDefault()
 
         val poll = Poll.of(
-            title = "모각코 일정 투표 - ${endDate}까지 가능한 날짜를 선택해주세요",
-            description = "모각코 예정 기간: ${startDate}-${endDate}",
-            startAt = startDate.atStartOfDay(zoneId).toInstant(),
-            endAt = endDate.atStartOfDay(zoneId).toInstant(),
+            title = "가능한 모각코 날짜에 ${pollEndDate}까지 투표해주세요",
+            description = "모각코 예정 기간: ${voteStartDate}-${voteEndDate}",
+            startAt = pollStartDate.atStartOfDay(zoneId).toInstant(),
+            endAt = pollEndDate.atStartOfDay(zoneId).toInstant(),
             pollStatus = PollStatus.OPEN
         )
         pollRepository.save(poll)
-        applicationEventPublisher.publishEvent(PollGeneratedEvent.of(poll.id!!, poll.startAt, poll.endAt))
+        applicationEventPublisher.publishEvent(
+            PollGeneratedEvent.of(
+                poll.id!!,
+                voteStartDate.atStartOfDay(zoneId).toInstant(),
+                voteEndDate.atStartOfDay(zoneId).toInstant()
+            )
+        )
         return poll
-
     }
 
     fun findPollsByStatus(status: PollStatus, page: Int, size: Int): Page<Poll> {
