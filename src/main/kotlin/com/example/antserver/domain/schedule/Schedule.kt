@@ -1,6 +1,8 @@
 package com.example.antserver.domain.schedule
 
 import com.example.antserver.domain.AggregateRoot
+import com.example.antserver.util.exception.ApplicationException
+import com.example.antserver.util.response.Status
 import jakarta.persistence.*
 import java.time.Instant
 import java.util.*
@@ -42,6 +44,9 @@ data class Schedule(
     }
 
     fun addVoter(userId: UUID) {
-        this.voters.add(userId)
+        require (userId !in voters) {
+            throw ApplicationException(Status.BadRequest, "$userId attempted to vote multiple times.", "중복 투표는 불가능합니다.")
+        }
+        voters.add(userId)
     }
 }
