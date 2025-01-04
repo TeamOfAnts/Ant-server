@@ -31,16 +31,23 @@ class JwtAuthenticationFilter(
             val accessToken = jwtTokenManager.getAccessToken(request)
             tokenService.isTokenValid(accessToken)
             authenticateUser(accessToken)
-        } catch (exception: AuthenticationException) {
-            // NOTE: access token 만료 에러의 경우 refresh 해야하기 때문에 에러 응답을 생성한다.
-            writeErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, exception.message)
-            return
-        } catch (exception: NullPointerException) {
-            // NOTE: access token 없이 허용된 요청도 filter chain 밖으로 에러가 전파되기 때문에 catch해서 doFilter한다.
             filterChain.doFilter(request, response)
-            return
+        } catch (exception: Exception) {
+            when (exception) {
+                // NOTE: access token 만료 에러의 경우 refresh 해야하기 때문에 에러 응답을 생성한다.
+                is AuthenticationException -> {
+                    writeErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, exception.message)
+                    return
+                }
+                // NOTE: access token이 없거나 유효하지 않은 경우 에러가 filter chain 밖으로 전파되지 않도록 catch
+                //  -> 허용된 요청을 filter chain에서 처리하도록 doFilter를 호출한다.
+                is NullPointerException, is ApplicationException -> {
+                    filterChain.doFilter(request, response)
+                    return
+                }
+                else -> throw exception
+            }
         }
-        filterChain.doFilter(request, response)
     }
 
     fun authenticateUser(accessToken: String) {
