@@ -21,7 +21,7 @@ class ScheduleController(
         @RequestParam pollId: Long,
     ): CommonResponse<List<ScheduleResponse>> {
         val schedules = scheduleService.findSchedulesByPollId(pollId)
-        return CommonResponse(schedules.map { ScheduleResponse.from(it) })
+        return CommonResponse(schedules.map { ScheduleResponse.of(it) })
     }
 
     @PatchMapping("/votes")

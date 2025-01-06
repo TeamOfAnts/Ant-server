@@ -3,20 +3,24 @@ package com.example.antserver.presentation.schedule.dto
 import com.example.antserver.domain.schedule.Schedule
 import com.example.antserver.domain.schedule.ScheduleStatus
 import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 data class ScheduleResponse(
     val id: Long,
     val pollId: Long,
-    val scheduleOn: Instant,
+    val scheduleOn: LocalDate,
     val votes: Int,
     val scheduleStatus: ScheduleStatus
 ) {
     companion object {
-        fun from(schedule: Schedule): ScheduleResponse {
+        fun of(schedule: Schedule): ScheduleResponse {
+            val zoneId = ZoneId.of("Asia/Seoul")
             return ScheduleResponse(
                 id = schedule.id!!,
                 pollId = schedule.pollId,
-                scheduleOn = schedule.scheduleOn,
+                scheduleOn = schedule.scheduleOn.atZone(zoneId).toLocalDate(),
                 votes = schedule.voters.size,
                 scheduleStatus = schedule.scheduleStatus
             )
