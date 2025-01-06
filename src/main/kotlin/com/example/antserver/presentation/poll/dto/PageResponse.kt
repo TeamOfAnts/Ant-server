@@ -7,7 +7,7 @@ data class PageResponse<T>(
     val totalCount: Long
 ) {
     companion object {
-        fun <T> from(page: Page<T>): PageResponse<T> {
+        fun <T> of(page: Page<T>): PageResponse<T> {
             return PageResponse(
                 contents = page.content,
                 totalCount = page.totalElements

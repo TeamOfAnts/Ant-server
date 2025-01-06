@@ -12,10 +12,11 @@ data class PollResponse(
     val description: String,
     val startAt: LocalDate,
     val endAt: LocalDate,
-    val status: PollStatus
+    val status: PollStatus,
+    val votedSchedules: List<Long>
 ) {
     companion object {
-        fun of(poll: Poll): PollResponse {
+        fun of(poll: Poll, votedSchedules: List<Long>): PollResponse {
             val zoneId = ZoneId.of("Asia/Seoul")
             return PollResponse(
                 id = poll.id!!,
@@ -23,7 +24,8 @@ data class PollResponse(
                 description = poll.description,
                 startAt = poll.startAt.atZone(zoneId).toLocalDate(),
                 endAt = poll.endAt.atZone(zoneId).toLocalDate(),
-                status = poll.pollStatus
+                status = poll.pollStatus,
+                votedSchedules = votedSchedules
             )
         }
     }

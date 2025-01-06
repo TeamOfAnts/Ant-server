@@ -30,7 +30,7 @@ class PollService(
         val zoneId = ZoneId.systemDefault()
 
         val poll = Poll.of(
-            title = "${pollEndDate}까지 가능한 모각코 날짜에 투표해주세요",
+            title = "투표 기한: ${pollEndDate}",
             description = "모각코 예정 기간: ${voteStartDate} ~ ${voteEndDate}",
             startAt = pollStartDate.atStartOfDay(zoneId).toInstant(),
             endAt = pollEndDate.atStartOfDay(zoneId).toInstant(),

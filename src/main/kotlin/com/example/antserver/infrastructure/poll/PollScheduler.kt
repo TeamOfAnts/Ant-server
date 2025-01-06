@@ -1,5 +1,6 @@
-package com.example.antserver.application.poll
+package com.example.antserver.infrastructure.poll
 
+import com.example.antserver.application.poll.PollService
 import com.example.antserver.application.schedule.ScheduleService
 import com.example.antserver.domain.poll.PollRepository
 import com.example.antserver.domain.poll.PollStatus
