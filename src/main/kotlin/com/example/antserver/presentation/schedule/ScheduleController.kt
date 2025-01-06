@@ -1,7 +1,6 @@
 package com.example.antserver.presentation.schedule
 
 import com.example.antserver.application.schedule.ScheduleService
-import com.example.antserver.presentation.schedule.dto.ScheduleRequest
 import com.example.antserver.presentation.schedule.dto.ScheduleResponse
 import com.example.antserver.presentation.schedule.dto.VoteRequest
 import com.example.antserver.util.response.CommonResponse
@@ -17,11 +16,11 @@ class ScheduleController(
     private val jwtTokenManager: JwtTokenManager
 ) {
 
-    @PostMapping
+    @GetMapping
     fun findSchedulesByPollId(
-        @RequestBody scheduleRequest: ScheduleRequest
+        @RequestParam pollId: Long,
     ): CommonResponse<List<ScheduleResponse>> {
-        val schedules = scheduleService.findSchedulesByPollId(scheduleRequest.pollId)
+        val schedules = scheduleService.findSchedulesByPollId(pollId)
         return CommonResponse(schedules.map { ScheduleResponse.from(it) })
     }
 
