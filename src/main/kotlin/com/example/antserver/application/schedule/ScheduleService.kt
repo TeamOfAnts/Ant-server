@@ -57,11 +57,17 @@ class ScheduleService(
 
     @Transactional
     fun voteSchedules(userId: UUID, scheduleIds: List<Long>): List<Schedule> {
-        val schedules = scheduleRepository.findAllById(scheduleIds)
-        schedules.forEach { schedule ->
-            schedule.addVoter(userId)
-        }
+        val votingSchedules = scheduleRepository.findAllById(scheduleIds)
+        val pollId = votingSchedules.first().pollId
+        val totalSchedules = scheduleRepository.findAllByPollId(pollId)
+        val votedScheduleIds = totalSchedules.filter { userId in it.voters }.map { it.id }.toSet()
 
-        return scheduleRepository.saveAll(schedules)
+        val voterRemovedSchedules = totalSchedules.filter { it.id in votedScheduleIds && it.id !in scheduleIds }
+        voterRemovedSchedules.forEach { it.deleteVoter(userId) }
+
+        val voterAddedSchedules = totalSchedules.filter { it.id !in votedScheduleIds && it.id in scheduleIds }
+        voterAddedSchedules.forEach { it.addVoter(userId) }
+
+        return scheduleRepository.saveAll(voterRemovedSchedules + voterAddedSchedules)
     }
 }
