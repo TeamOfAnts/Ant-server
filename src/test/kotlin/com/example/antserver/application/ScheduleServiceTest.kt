@@ -2,9 +2,13 @@ package com.example.antserver.application
 
 import com.example.antserver.application.poll.PollService
 import com.example.antserver.application.schedule.ScheduleService
+import com.example.antserver.application.user.UserService
 import com.example.antserver.domain.schedule.ScheduleRepository
 import com.example.antserver.domain.schedule.ScheduleStatus
-import com.example.antserver.util.exception.ApplicationException
+import com.example.antserver.domain.user.ProviderType
+import com.example.antserver.domain.user.User
+import com.example.antserver.domain.user.UserRoleType
+import com.example.antserver.infrastructure.user.JpaUserRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
@@ -17,6 +21,12 @@ import kotlin.test.Test
 @SpringBootTest
 @Transactional
 class ScheduleServiceTest {
+
+    @Autowired
+    private lateinit var jpaUserRepository: JpaUserRepository
+
+    @Autowired
+    private lateinit var userService: UserService
 
     @Autowired
     private lateinit var pollService: PollService
@@ -64,32 +74,42 @@ class ScheduleServiceTest {
     @DisplayName("특정 scheduleId에 투표한다")
     fun voteSchedules() {
         // given
-        val userId = UUID.randomUUID()
+        val userName = "test"
+        val user = User.of(userName, "test@gmail.com", ProviderType.GOOGLE, "", UserRoleType.MEMBER)
+        jpaUserRepository.save(user)
         pollService.generatePoll()
 
         // when
-        val updatedSchedules = scheduleService.voteSchedules(userId, listOf(1L, 3L, 5L))
+        val updatedSchedules = scheduleService.voteSchedules(user.id, listOf(1L, 3L, 5L))
 
         // then
         assertThat(updatedSchedules.filter { it.id in listOf(1L, 3L, 5L) }
-            .all { it.voters.contains(userId) && it.voters.size == 1 }).isTrue
+            .all { it.voters.keys.contains(user.id) && it.voters.size == 1 }).isTrue
+        assertThat(updatedSchedules.filter { it.id in listOf(1L, 3L, 5L) }
+            .all { it.voters.values.contains(userName) && it.voters.size == 1 }).isTrue
         assertThat(updatedSchedules.filterNot { it.id in listOf(1L, 3L, 5L) }
-            .none { it.voters.contains(userId) && it.voters.size == 0 }).isTrue
+            .none { it.voters.keys.contains(user.id) && it.voters.size == 0 }).isTrue
     }
 
-//    @Test
-//    @DisplayName("특정 scheduleId에 중복 투표할 수 없다")
-//    fun failToVoteSameSchedulesMultipleTimes() {
-//        // given
-//        val userId = UUID.randomUUID()
-//        pollService.generatePoll()
-//
-//        // when & then
-//        assertThrows<ApplicationException> {
-//            scheduleService.voteSchedules(userId, listOf(2L, 4L, 6L))
-//            scheduleService.voteSchedules(userId, listOf(6L))
-//        }
-//    }
+    @Test
+    @DisplayName("특정 scheduleId에 대한 투표를 수정한다")
+    fun modifyVoteSchedules() {
+        // given
+        val userId = UUID.randomUUID()
+        pollService.generatePoll()
+        val firstVoteScheduleIds = listOf(1L, 3L, 5L)
+        val secondVoteScheduleIds = listOf(1L, 7L, 6L)
+
+        // when
+        scheduleService.voteSchedules(userId, firstVoteScheduleIds)
+        val updatedSchedules = scheduleService.voteSchedules(userId, secondVoteScheduleIds)
+
+        // then
+        assertThat(updatedSchedules.all { it.voters.contains(userId) && it.voters.size == 1 }).isTrue
+//        assertThat(updatedSchedules.none { it.voters.contains(userId) && it.voters.size == 0 }).isTrue
+    }
+
+
 //
 //    @Test
 //    @DisplayName("투표 생성일로부터 이틀이 지나면 투표를 종료하고 스케쥴을 확정한다")

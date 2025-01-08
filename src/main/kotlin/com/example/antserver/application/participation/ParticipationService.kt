@@ -23,10 +23,10 @@ class ParticipationService(
     @EventListener
     fun saveParticipation(event: ScheduleConfirmedEvent): List<Participation> {
         val participations = event.confirmedSchedules.flatMap { schedule ->
-            schedule.voters.map { userId ->
+            schedule.voters.map { voter ->
                 Participation.of(
                     scheduleId = schedule.id ?: throw ApplicationException(Status.ServerError, "Schedule id is null", ""),
-                    userId = userId,
+                    userId = voter.key,
                     participationType = ParticipationType.STUDY
                 )
             }

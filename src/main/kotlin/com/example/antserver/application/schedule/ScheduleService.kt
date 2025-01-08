@@ -1,5 +1,6 @@
 package com.example.antserver.application.schedule
 
+import com.example.antserver.application.user.UserService
 import com.example.antserver.domain.poll.PollGeneratedEvent
 import com.example.antserver.domain.schedule.Schedule
 import com.example.antserver.domain.schedule.ScheduleRepository
@@ -18,6 +19,7 @@ import java.util.*
 class ScheduleService(
     private val scheduleRepository: ScheduleRepository,
     private val applicationEventPublisher: ApplicationEventPublisher,
+    private val userService: UserService,
     ) {
 
     @EventListener
@@ -57,16 +59,17 @@ class ScheduleService(
 
     @Transactional
     fun voteSchedules(userId: UUID, scheduleIds: List<Long>): List<Schedule> {
+        val voter = userService.findUser(userId)
         val votingSchedules = scheduleRepository.findAllById(scheduleIds)
         val pollId = votingSchedules.first().pollId
         val totalSchedules = scheduleRepository.findAllByPollId(pollId)
         val votedScheduleIds = totalSchedules.filter { userId in it.voters }.map { it.id }.toSet()
 
         val voterRemovedSchedules = totalSchedules.filter { it.id in votedScheduleIds && it.id !in scheduleIds }
-        voterRemovedSchedules.forEach { it.deleteVoter(userId) }
+        voterRemovedSchedules.forEach { it.deleteVoter(voter) }
 
         val voterAddedSchedules = totalSchedules.filter { it.id !in votedScheduleIds && it.id in scheduleIds }
-        voterAddedSchedules.forEach { it.addVoter(userId) }
+        voterAddedSchedules.forEach { it.addVoter(voter) }
 
         return scheduleRepository.saveAll(voterRemovedSchedules + voterAddedSchedules)
     }

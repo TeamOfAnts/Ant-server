@@ -1,6 +1,7 @@
 package com.example.antserver.domain.schedule
 
 import com.example.antserver.domain.AggregateRoot
+import com.example.antserver.domain.user.User
 import jakarta.persistence.*
 import java.time.Instant
 import java.util.*
@@ -21,7 +22,7 @@ data class Schedule(
 
     @ElementCollection
     @Column(name = "voters")
-    val voters: MutableSet<UUID>,
+    val voters: MutableMap<UUID, String>,
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
@@ -36,16 +37,16 @@ data class Schedule(
             return Schedule(
                 pollId = pollId,
                 scheduleOn = scheduleOn,
-                voters = HashSet<UUID>(),
+                voters = mutableMapOf(),
                 scheduleStatus = scheduleStatus)
         }
     }
 
-    fun addVoter(userId: UUID) {
-        voters.add(userId)
+    fun addVoter(voter: User) {
+        voters[voter.id] = voter.name
     }
 
-    fun deleteVoter(userId: UUID) {
-        voters.remove(userId)
+    fun deleteVoter(voter: User) {
+        voters.remove(voter.id)
     }
 }
