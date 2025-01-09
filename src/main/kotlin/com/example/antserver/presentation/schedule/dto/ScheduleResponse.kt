@@ -11,7 +11,6 @@ data class ScheduleResponse(
     val id: Long,
     val pollId: Long,
     val scheduleOn: LocalDate,
-    val votes: Int,
     val voters: List<String>,
     val scheduleStatus: ScheduleStatus
 ) {
@@ -22,7 +21,6 @@ data class ScheduleResponse(
                 id = schedule.id!!,
                 pollId = schedule.pollId,
                 scheduleOn = schedule.scheduleOn.atZone(zoneId).toLocalDate(),
-                votes = schedule.voters.size,
                 voters = schedule.voters.map { voter -> voter.value},
                 scheduleStatus = schedule.scheduleStatus
             )
