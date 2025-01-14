@@ -21,7 +21,7 @@ class PollScheduler(
     private val lastPoll = pollRepository.findLast()
     private val lastPollDate = lastPoll?.createdAt
 
-    @Scheduled(cron = "0 0 18 ? * SUN", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 18 ? * Thu", zone = "Asia/Seoul")
     fun startPoll() {
         val today = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()
 
@@ -30,7 +30,7 @@ class PollScheduler(
         }
     }
 
-    @Scheduled(cron = "0 0 18 ? * TUE", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 18 ? * Sat", zone = "Asia/Seoul")
     fun endPoll() {
         val lastPollId = lastPoll?.id
             ?: throw ApplicationException(Status.ServerError, "Poll does not exists", "")

@@ -23,25 +23,25 @@ class PollService(
 
     @Transactional
     fun generatePoll(): Poll {
-        val pollStartDate = LocalDate.now() // 일
-        val pollEndDate = pollStartDate.plusDays(2) // 화
-        val voteStartDate = pollStartDate.plusDays(1) // 월
-        val voteEndDate = pollStartDate.plusDays(14) // 일
+        val voteStartDate = LocalDate.now() // 목
+        val voteEndDate = voteStartDate.plusDays(2) // 토
+        val scheduleStartDate = voteStartDate.plusDays(4) // 월
+        val scheduleEndDate = voteStartDate.plusDays(17) // 일
         val zoneId = ZoneId.systemDefault()
 
         val poll = Poll.of(
-            title = "투표 기한: ${pollEndDate}",
-            description = "모각코 예정 기간: ${voteStartDate} ~ ${voteEndDate}",
-            startAt = pollStartDate.atStartOfDay(zoneId).toInstant(),
-            endAt = pollEndDate.atStartOfDay(zoneId).toInstant(),
+            title = "투표 기한: ${voteEndDate} 18시",
+            description = "모각코 예정 기간: ${scheduleStartDate} ~ ${scheduleEndDate}",
+            startAt = voteStartDate.atStartOfDay(zoneId).toInstant(),
+            endAt = voteEndDate.atStartOfDay(zoneId).toInstant(),
             pollStatus = PollStatus.OPEN
         )
         pollRepository.save(poll)
         applicationEventPublisher.publishEvent(
             PollGeneratedEvent.of(
                 poll.id!!,
-                voteStartDate.atStartOfDay(zoneId).toInstant(),
-                voteEndDate.atStartOfDay(zoneId).toInstant()
+                scheduleStartDate.atStartOfDay(zoneId).toInstant(),
+                scheduleEndDate.atStartOfDay(zoneId).toInstant()
             )
         )
         return poll
