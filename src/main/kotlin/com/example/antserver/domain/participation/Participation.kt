@@ -19,7 +19,8 @@ data class Participation(
     @Column(name = "schedule_id", nullable = false)
     val scheduleId: Long,
 
-    @Column(name = "participation_type")
+    @Column(name = "type")
+    @Enumerated(EnumType.STRING)
     val participationType: ParticipationType
 ): AggregateRoot() {
 
