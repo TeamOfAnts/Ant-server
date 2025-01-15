@@ -2,6 +2,7 @@ package com.example.antserver.domain.schedule
 
 import com.example.antserver.domain.AggregateRoot
 import com.example.antserver.domain.user.User
+import com.example.antserver.infrastructure.schedule.ScheduleOnConverter
 import jakarta.persistence.*
 import java.time.Instant
 import java.util.*
@@ -17,8 +18,9 @@ data class Schedule(
     @Column(name = "poll_id")
     val pollId: Long,
 
+    @Convert(converter = ScheduleOnConverter::class)
     @Column(name = "schedule_on")
-    val scheduleOn: Instant,
+    val scheduleOn: ScheduleOn,
 
     @ElementCollection
     @Column(name = "voters")
@@ -32,7 +34,7 @@ data class Schedule(
     companion object {
 
         fun of(pollId: Long,
-               scheduleOn: Instant,
+               scheduleOn: ScheduleOn,
                scheduleStatus: ScheduleStatus): Schedule {
             return Schedule(
                 pollId = pollId,
@@ -49,4 +51,10 @@ data class Schedule(
     fun deleteVoter(voter: User) {
         voters.remove(voter.id)
     }
+}
+
+@Embeddable
+sealed class ScheduleOn {
+    data class Scheduled(val schedule: Instant) : ScheduleOn()
+    data object Unscheduled : ScheduleOn()
 }
