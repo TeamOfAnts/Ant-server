@@ -11,9 +11,11 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.context.ActiveProfiles
 import kotlin.test.Test
 
 @SpringBootTest
+@ActiveProfiles("test")
 class ParticipationTest {
     @Autowired
     private lateinit var pollService: PollService

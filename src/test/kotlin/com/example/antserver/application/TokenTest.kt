@@ -1,10 +1,13 @@
 package com.example.antserver.application
 
+import com.auth0.jwt.JWT
+import com.auth0.jwt.algorithms.Algorithm
 import com.example.antserver.application.auth.TokenService
 import com.example.antserver.util.security.jwt.JwtTokenManager
 import com.example.antserver.domain.auth.RefreshToken
 import com.example.antserver.domain.auth.RefreshTokenRepository
 import com.example.antserver.util.exception.AuthenticationException
+import com.example.antserver.util.security.jwt.JwtProperties
 import com.fasterxml.uuid.Generators
 import io.mockk.every
 import io.mockk.mockk
@@ -15,12 +18,12 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.context.ActiveProfiles
 import org.testcontainers.shaded.com.google.common.net.HttpHeaders
 import java.util.*
 
 @SpringBootTest
-//@DataJpaTest
-//@Import(TestConfiguration::class) TODO 테스트용 필요한 빈만 넣어두는 TestConfiguration 추가
+@ActiveProfiles("test")
 class TokenTest {
     @Autowired
     private lateinit var refreshTokenRepository: RefreshTokenRepository
@@ -28,6 +31,9 @@ class TokenTest {
     private lateinit var jwtTokenManager: JwtTokenManager
     @Autowired
     private lateinit var tokenService: TokenService
+    @Autowired
+    private lateinit var jwtProperties: JwtProperties
+
     private val userId = Generators.timeBasedEpochGenerator().generate()
     private val mockRequest = mockk<HttpServletRequest>()
 
@@ -62,7 +68,6 @@ class TokenTest {
     @DisplayName("refresh Token이 유효하면 access Token을 재발급한다")
     fun renewAccessTokenWhenRefreshTokenIsValid() {
         // given
-        val userId = UUID.randomUUID()
         val refreshToken = tokenService.createRefreshToken()
         refreshTokenRepository.save(RefreshToken.of(userId, refreshToken))
 
@@ -78,7 +83,6 @@ class TokenTest {
     @DisplayName("token이 유효하면 exception을 throw하지 않는다")
     fun returnTrueIfTokenIsValid() {
         // given
-        val userId = UUID.randomUUID()
         val accessToken = tokenService.createAccessToken(userId)
 
         // when & then
@@ -89,9 +93,13 @@ class TokenTest {
     @DisplayName("access Token이 만료되면 AuthenticationException을 Throw한다")
     fun returnFalseIfTokenIsExpired() {
         // given
-        val accessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBY2Nlc3NUb2tlbiIsImV4cCI6MTczNTI5MjQ3NywidXNlcklkIjoiMDE5NDA3N2QtZTEyNi03ZWY1LWEyYWMtZGZjNWZhOGRmMjU5In0.nbyzUoyxqhARjLE_YEIY9_mMw_iWbCqHrC_Rw3OtJ3dKNXW5xyc7aQrtdxXOjHG9Tcm2CpIZKZALQ32abOYrdQ"
+        val accessToken = JWT.create()
+            .withSubject("AccessToken")
+            .withExpiresAt(Date(System.currentTimeMillis() - 1000))
+            .withClaim("userId", userId.toString())
+            .sign(Algorithm.HMAC512(jwtProperties.secret))
 
-        // when & then
+        // then
         assertThrows<AuthenticationException> {
             tokenService.isTokenValid(accessToken)
         }

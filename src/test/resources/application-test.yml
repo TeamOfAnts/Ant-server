@@ -1,0 +1,15 @@
+spring:
+  security:
+    enabled: false
+  datasource :
+    url: jdbc:mysql://localhost:3306/ant_test
+    username: root
+    password: 1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create
+    database-platform: org.hibernate.dialect.MySQLDialect
+    show-sql: true
+  mvc:
+    log-request-details: true

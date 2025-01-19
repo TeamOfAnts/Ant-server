@@ -3,22 +3,32 @@ package com.example.antserver.application
 import com.example.antserver.application.poll.PollService
 import com.example.antserver.domain.poll.PollRepository
 import com.example.antserver.domain.poll.PollStatus
+import com.example.antserver.infrastructure.poll.JpaPollRepository
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.transaction.annotation.Transactional
+import org.springframework.test.context.ActiveProfiles
 import kotlin.test.Test
 
-@Transactional
 @SpringBootTest
+@ActiveProfiles("test")
 class PollServiceTest {
 
     @Autowired
     private lateinit var pollService: PollService
 
     @Autowired
+    private lateinit var jpaPollRepository: JpaPollRepository
+
+    @Autowired
     private lateinit var pollRepository: PollRepository
+
+    @AfterEach
+    fun clearTables() {
+        jpaPollRepository.deleteAllInBatch()
+    }
 
     @Test
     @DisplayName("poll을 생성하면 OPEN 상태이다")
