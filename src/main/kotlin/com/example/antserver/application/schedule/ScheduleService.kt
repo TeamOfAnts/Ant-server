@@ -70,7 +70,9 @@ class ScheduleService(
     @Transactional
     fun voteSchedules(userId: UUID, scheduleIds: List<Long>): List<Schedule> {
         val voter = userService.findUser(userId)
-        val votingSchedules = scheduleRepository.findAllById(scheduleIds)
+        val votingSchedules = scheduleRepository.findAllById(scheduleIds).takeIf { it.isNotEmpty() }
+            ?: throw ApplicationException(Status.BadRequest, "Non-existent schedule id(s) ($scheduleIds).", "존재하지 않는 스케쥴 id(s)($scheduleIds)입니다.")
+
         val pollId = votingSchedules.first().pollId
         val totalSchedules = scheduleRepository.findAllByPollId(pollId)
         val votedScheduleIds = totalSchedules.filter { userId in it.voters }.map { it.id }.toSet()
