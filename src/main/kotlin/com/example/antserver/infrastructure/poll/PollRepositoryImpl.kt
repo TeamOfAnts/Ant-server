@@ -21,7 +21,6 @@ class PollRepositoryImpl(
     }
 
     override fun findAllByPollStatus(status: PollStatus, pageable: Pageable): Page<Poll> {
-        println(jpaPollRepository.findAllByPollStatus(status, pageable))
         return jpaPollRepository.findAllByPollStatus(status, pageable)
     }
 
