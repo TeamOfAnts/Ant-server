@@ -1,40 +1,55 @@
 package com.example.antserver.application
 
 import com.example.antserver.application.poll.PollService
-import com.example.antserver.domain.poll.PollRepository
+import com.example.antserver.domain.poll.Poll
 import com.example.antserver.domain.poll.PollStatus
-import com.example.antserver.infrastructure.poll.JpaPollRepository
+import com.example.antserver.fake.FakePollRepository
+import com.example.antserver.testconfig.TestConfig
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.ActiveProfiles
+import org.springframework.context.annotation.Import
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import kotlin.test.Test
 
+@Import(TestConfig::class)
 @SpringBootTest
-@ActiveProfiles("test")
 class PollServiceTest {
 
     @Autowired
     private lateinit var pollService: PollService
 
     @Autowired
-    private lateinit var jpaPollRepository: JpaPollRepository
+    private lateinit var pollRepository: FakePollRepository
 
-    @Autowired
-    private lateinit var pollRepository: PollRepository
+    private lateinit var poll: Poll
+
+    @BeforeEach
+    fun set() {
+        poll = Poll.of(
+            id = 1L,
+            voteStartAt = Instant.now(),
+            voteEndAt = Instant.now().plus(2, ChronoUnit.DAYS),
+            scheduleStartAt = Instant.now().plus(4, ChronoUnit.DAYS),
+            scheduleEndAt = Instant.now().plus(17, ChronoUnit.DAYS)
+        )
+        pollRepository.save(poll)
+    }
 
     @AfterEach
-    fun clearTables() {
-        jpaPollRepository.deleteAllInBatch()
+    fun clear() {
+        pollRepository.clear()
     }
 
     @Test
     @DisplayName("poll을 생성하면 OPEN 상태이다")
     fun generatePoll() {
         // given & when
-        val poll = pollService.generatePoll()
+        val poll = poll
 
         // then
         assertThat(poll.pollStatus).isEqualTo(PollStatus.OPEN)
@@ -44,7 +59,7 @@ class PollServiceTest {
     @DisplayName("poll을 종료하면 CLOSED 상태이다")
     fun endPoll() {
         // given
-        val poll = pollService.generatePoll()
+        val poll = poll
 
         // when
         pollService.updatePollStatus(poll.id!!, PollStatus.CLOSED)
@@ -58,7 +73,7 @@ class PollServiceTest {
     @DisplayName("OPEN 상태의 poll을 조회한다")
     fun getOpenPoll() {
         // given
-        pollService.generatePoll()
+        val poll = poll
 
         // when
         val openPolls = pollService.findPollsByStatus(PollStatus.OPEN, 0, 10)
@@ -72,9 +87,23 @@ class PollServiceTest {
     @DisplayName("CLOSED 상태의 poll을 조회한다")
     fun getClosedPolls() {
         // given
-        val poll1 = pollService.generatePoll()
-        val poll2 = pollService.generatePoll()
-        val poll3 = pollService.generatePoll()
+        val poll1 = poll
+        val poll2 = Poll.of(
+            id = 2L,
+            voteStartAt = Instant.now(),
+            voteEndAt = Instant.now().plus(2, ChronoUnit.DAYS),
+            scheduleStartAt = Instant.now().plus(4, ChronoUnit.DAYS),
+            scheduleEndAt = Instant.now().plus(17, ChronoUnit.DAYS)
+            )
+        pollRepository.save(poll2)
+        val poll3 = Poll.of(
+            id = 1L,
+            voteStartAt = Instant.now(),
+            voteEndAt = Instant.now().plus(2, ChronoUnit.DAYS),
+            scheduleStartAt = Instant.now().plus(4, ChronoUnit.DAYS),
+            scheduleEndAt = Instant.now().plus(17, ChronoUnit.DAYS)
+            )
+        pollRepository.save(poll3)
 
         // when
         pollService.updatePollStatus(poll1.id!!, PollStatus.CLOSED)

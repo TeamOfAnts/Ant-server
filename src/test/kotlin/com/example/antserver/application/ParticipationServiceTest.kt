@@ -1,24 +1,39 @@
 package com.example.antserver.application
 
 import com.example.antserver.application.participation.ParticipationService
-import com.example.antserver.application.poll.PollService
 import com.example.antserver.application.schedule.ScheduleService
+import com.example.antserver.domain.poll.Poll
+import com.example.antserver.domain.schedule.Schedule
 import com.example.antserver.domain.user.ProviderType
 import com.example.antserver.domain.user.User
-import com.example.antserver.domain.user.UserRepository
 import com.example.antserver.domain.user.UserRoleType
+import com.example.antserver.fake.FakePollRepository
+import com.example.antserver.fake.FakeScheduleRepository
+import com.example.antserver.fake.FakeUserRepository
+import com.example.antserver.testconfig.TestConfig
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.junit.jupiter.MockitoExtension
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.ActiveProfiles
+import org.springframework.context.annotation.Import
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import kotlin.test.Test
 
+@Import(TestConfig::class)
 @SpringBootTest
-@ActiveProfiles("test")
-class ParticipationTest {
+@ExtendWith(MockitoExtension::class)
+class ParticipationServiceTest {
     @Autowired
-    private lateinit var pollService: PollService
+    private lateinit var userRepository: FakeUserRepository
+
+    @Autowired
+    private lateinit var pollRepository: FakePollRepository
+
+    @Autowired
+    private lateinit var scheduleRepository: FakeScheduleRepository
 
     @Autowired
     private lateinit var scheduleService: ScheduleService
@@ -26,8 +41,19 @@ class ParticipationTest {
     @Autowired
     private lateinit var participationService: ParticipationService
 
-    @Autowired
-    private lateinit var jpaUserRepository: UserRepository
+
+//    private lateinit var pollService: PollService
+//    private lateinit var scheduleService: ScheduleService
+//    private lateinit var participationService: ParticipationService
+
+//    @BeforeEach
+//    fun setup() {
+////        MockitoAnnotations.openMocks(this)
+//        userRepository.clear()
+////        pollService = PollService(pollRepository, applicationEventPublisher)
+////        scheduleService = ScheduleService(scheduleRepository, applicationEventPublisher, userService)
+////        participationService = ParticipationService(participationRepository)
+//    }
 
     @Test
     @DisplayName("스케쥴 확정 시 participation이 저장된다")
@@ -38,13 +64,26 @@ class ParticipationTest {
         val user3 = User.of("test3", "test3@gmail.com", ProviderType.GOOGLE, "", UserRoleType.MEMBER)
         val user4 = User.of("test4", "test4@gmail.com", ProviderType.GOOGLE, "", UserRoleType.MEMBER)
         val user5 = User.of("test5", "test5@gmail.com", ProviderType.GOOGLE, "", UserRoleType.MEMBER)
-        jpaUserRepository.save(user1)
-        jpaUserRepository.save(user2)
-        jpaUserRepository.save(user3)
-        jpaUserRepository.save(user4)
-        jpaUserRepository.save(user5)
+        userRepository.saveAll(listOf(user1, user2, user3, user4, user5))
 
-        val poll = pollService.generatePoll()
+        val voteStartAt = Instant.now()
+        val voteEndAt = voteStartAt.plus(2, ChronoUnit.DAYS)
+        val scheduleStartAt = voteStartAt.plus(4, ChronoUnit.DAYS)
+        val scheduleEndAt = voteStartAt.plus(17, ChronoUnit.DAYS)
+
+        val poll = Poll.of(
+            id = 1L,
+            voteStartAt = voteStartAt,
+            voteEndAt = voteEndAt,
+            scheduleStartAt = scheduleStartAt,
+            scheduleEndAt = scheduleEndAt
+        )
+        pollRepository.save(poll)
+
+        val daysWithUnscheduled = ChronoUnit.DAYS.between(scheduleStartAt, scheduleEndAt) + 1
+        val schedules = Schedule.ofSchedules(1L, Instant.now(), daysWithUnscheduled)
+        scheduleRepository.saveAll(schedules)
+
         scheduleService.voteSchedules(user1.id, listOf(1L, 2L, 3L))
         scheduleService.voteSchedules(user2.id, listOf(1L, 2L, 4L))
         scheduleService.voteSchedules(user3.id, listOf(1L, 2L, 5L))
