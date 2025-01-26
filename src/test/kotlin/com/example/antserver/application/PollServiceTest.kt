@@ -17,7 +17,7 @@ import java.time.temporal.ChronoUnit
 import kotlin.test.Test
 
 @Import(TestConfig::class)
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class PollServiceTest {
 
     @Autowired

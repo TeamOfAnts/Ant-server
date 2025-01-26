@@ -26,7 +26,7 @@ import java.time.temporal.ChronoUnit
 import kotlin.test.Test
 
 @Import(TestConfig::class)
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class ScheduleServiceTest {
 

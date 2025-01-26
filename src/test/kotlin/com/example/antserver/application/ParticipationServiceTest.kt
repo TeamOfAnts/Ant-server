@@ -23,7 +23,7 @@ import java.time.temporal.ChronoUnit
 import kotlin.test.Test
 
 @Import(TestConfig::class)
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ExtendWith(MockitoExtension::class)
 class ParticipationServiceTest {
     @Autowired
@@ -40,20 +40,6 @@ class ParticipationServiceTest {
 
     @Autowired
     private lateinit var participationService: ParticipationService
-
-
-//    private lateinit var pollService: PollService
-//    private lateinit var scheduleService: ScheduleService
-//    private lateinit var participationService: ParticipationService
-
-//    @BeforeEach
-//    fun setup() {
-////        MockitoAnnotations.openMocks(this)
-//        userRepository.clear()
-////        pollService = PollService(pollRepository, applicationEventPublisher)
-////        scheduleService = ScheduleService(scheduleRepository, applicationEventPublisher, userService)
-////        participationService = ParticipationService(participationRepository)
-//    }
 
     @Test
     @DisplayName("스케쥴 확정 시 participation이 저장된다")

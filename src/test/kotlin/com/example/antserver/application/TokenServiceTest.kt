@@ -21,7 +21,7 @@ import org.springframework.context.annotation.Import
 import org.testcontainers.shaded.com.google.common.net.HttpHeaders
 import java.util.*
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(TestConfig::class)
 class TokenServiceTest {
     @Autowired
