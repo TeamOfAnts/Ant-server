@@ -22,12 +22,15 @@ import org.springframework.test.context.TestPropertySource
 import org.testcontainers.shaded.com.google.common.net.HttpHeaders
 import java.util.*
 
+@TestPropertySource(properties = [
+    "spring.datasource.url=",
+    "spring.datasource.username=",
+    "spring.datasource.password=",
+    "spring.datasource.driver-class-name=",
+    "spring.jpa.database-platform=",
+    "spring.jpa.hibernate.ddl-auto=none"
+])
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-//@TestPropertySource(properties = [
-//    "jwt.secret=",
-//    "google.client-id=",
-//    "google.client-secret="
-//])
 @Import(TestConfig::class)
 class TokenServiceTest {
     @Autowired

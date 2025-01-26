@@ -21,10 +21,19 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.test.annotation.DirtiesContext
+import org.springframework.test.context.TestPropertySource
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import kotlin.test.Test
 
+@TestPropertySource(properties = [
+    "spring.datasource.url=",
+    "spring.datasource.username=",
+    "spring.datasource.password=",
+    "spring.datasource.driver-class-name=",
+    "spring.jpa.database-platform=",
+    "spring.jpa.hibernate.ddl-auto=none"
+])
 @Import(TestConfig::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
