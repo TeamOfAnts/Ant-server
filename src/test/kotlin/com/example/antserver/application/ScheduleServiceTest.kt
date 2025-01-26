@@ -26,14 +26,6 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 import kotlin.test.Test
 
-@TestPropertySource(properties = [
-    "spring.datasource.url=",
-    "spring.datasource.username=",
-    "spring.datasource.password=",
-    "spring.datasource.driver-class-name=",
-    "spring.jpa.database-platform=",
-    "spring.jpa.hibernate.ddl-auto=none"
-])
 @Import(TestConfig::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
@@ -61,6 +53,10 @@ class ScheduleServiceTest {
 
     @BeforeEach
     fun set() {
+        scheduleRepository.clear()
+        pollRepository.clear()
+        userRepository.clear()
+
         user = User.of("test", "test2@gmail.com", ProviderType.GOOGLE, "", UserRoleType.MEMBER)
         userRepository.save(user)
 
@@ -78,12 +74,6 @@ class ScheduleServiceTest {
         scheduleRepository.saveAll(schedules)
     }
 
-    @AfterEach
-    fun clear() {
-        scheduleRepository.clear()
-        pollRepository.clear()
-        userRepository.clear()
-    }
 
 //    @Test
 //    @DisplayName("Poll이 생성되면 해당 Poll에 대한 Schedules가 생성된다")
