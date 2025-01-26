@@ -17,6 +17,10 @@ class ScheduleRepositoryImpl(
         return jpaScheduleRepository.saveAll(schedules)
     }
 
+    override fun findById(id: Long): Schedule? {
+        return jpaScheduleRepository.findById(id).orElse(null)
+    }
+
     override fun findAllById(ids: List<Long>): List<Schedule> {
         return jpaScheduleRepository.findAllById(ids)
     }
