@@ -3,34 +3,36 @@ package com.example.antserver.application
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.example.antserver.application.auth.TokenService
-import com.example.antserver.util.security.jwt.JwtTokenManager
 import com.example.antserver.domain.auth.RefreshToken
-import com.example.antserver.domain.auth.RefreshTokenRepository
+import com.example.antserver.fake.FakeRefreshTokenRepository
+import com.example.antserver.testconfig.TestConfig
 import com.example.antserver.util.exception.AuthenticationException
 import com.example.antserver.util.security.jwt.JwtProperties
+import com.example.antserver.util.security.jwt.JwtTokenManager
 import com.fasterxml.uuid.Generators
 import io.mockk.every
 import io.mockk.mockk
 import jakarta.servlet.http.HttpServletRequest
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.ActiveProfiles
+import org.springframework.context.annotation.Import
 import org.testcontainers.shaded.com.google.common.net.HttpHeaders
 import java.util.*
 
 @SpringBootTest
-@ActiveProfiles("test")
-class TokenTest {
+@Import(TestConfig::class)
+class TokenServiceTest {
     @Autowired
-    private lateinit var refreshTokenRepository: RefreshTokenRepository
+    private lateinit var fakeRefreshTokenRepository: FakeRefreshTokenRepository
+
     @Autowired
     private lateinit var jwtTokenManager: JwtTokenManager
+
     @Autowired
     private lateinit var tokenService: TokenService
+
     @Autowired
     private lateinit var jwtProperties: JwtProperties
 
@@ -69,7 +71,7 @@ class TokenTest {
     fun renewAccessTokenWhenRefreshTokenIsValid() {
         // given
         val refreshToken = tokenService.createRefreshToken()
-        refreshTokenRepository.save(RefreshToken.of(userId, refreshToken))
+        fakeRefreshTokenRepository.save(RefreshToken.of(userId, refreshToken))
 
         // when
         val accessToken = tokenService.refreshAccessToken(userId, refreshToken)
