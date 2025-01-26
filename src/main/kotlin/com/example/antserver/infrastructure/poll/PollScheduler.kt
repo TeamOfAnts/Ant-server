@@ -8,8 +8,7 @@ import com.example.antserver.util.exception.ApplicationException
 import com.example.antserver.util.response.Status
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
-import java.time.LocalDate
-import java.time.ZoneId
+import java.time.Instant
 import java.time.temporal.ChronoUnit
 
 @Component
@@ -23,7 +22,7 @@ class PollScheduler(
 
     @Scheduled(cron = "0 0 18 ? * Thu", zone = "Asia/Seoul")
     fun startPoll() {
-        val today = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()
+        val today = Instant.now()
 
         if (lastPollDate == null || ChronoUnit.WEEKS.between(lastPollDate, today) >= 2) {
             pollService.generatePoll()
@@ -34,7 +33,7 @@ class PollScheduler(
     fun endPoll() {
         val lastPollId = lastPoll?.id
             ?: throw ApplicationException(Status.ServerError, "Poll does not exists", "")
-        val today = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()
+        val today = Instant.now()
 
         if (ChronoUnit.DAYS.between(lastPollDate, today) == 1L) {
             pollService.updatePollStatus(lastPollId, PollStatus.CLOSED)
