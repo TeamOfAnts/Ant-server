@@ -1,6 +1,6 @@
 package com.example.antserver.application.schedule
 
-import com.example.antserver.domain.poll.PollGeneratedEvent
+import com.example.antserver.application.poll.PollGeneratedEvent
 import org.springframework.stereotype.Component
 import org.springframework.transaction.event.TransactionPhase
 import org.springframework.transaction.event.TransactionalEventListener

@@ -1,6 +1,6 @@
 package com.example.antserver.application.participation
 
-import com.example.antserver.domain.schedule.ScheduleConfirmedEvent
+import com.example.antserver.application.schedule.ScheduleConfirmedEvent
 import org.springframework.stereotype.Component
 import org.springframework.transaction.event.TransactionPhase
 import org.springframework.transaction.event.TransactionalEventListener
