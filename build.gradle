@@ -57,7 +57,6 @@ dependencies {
     testImplementation 'org.testcontainers:mysql'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation 'io.mockk:mockk:1.13.2'
-    testImplementation 'com.h2database:h2'
 }
 
 kotlin {
