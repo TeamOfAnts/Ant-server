@@ -1,7 +1,6 @@
 package com.example.antserver.application.poll
 
 import com.example.antserver.domain.poll.Poll
-import com.example.antserver.domain.poll.PollGeneratedEvent
 import com.example.antserver.domain.poll.PollRepository
 import com.example.antserver.domain.poll.PollStatus
 import com.example.antserver.util.exception.ApplicationException
@@ -12,8 +11,8 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.LocalDate
-import java.time.ZoneId
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 @Service
 class PollService(
@@ -23,27 +22,22 @@ class PollService(
 
     @Transactional
     fun generatePoll(): Poll {
-        val voteStartDate = LocalDate.now() // 목
-        val voteEndDate = voteStartDate.plusDays(2) // 토
-        val scheduleStartDate = voteStartDate.plusDays(4) // 월
-        val scheduleEndDate = voteStartDate.plusDays(17) // 일
-        val zoneId = ZoneId.systemDefault()
+        val voteStartAt = Instant.now() // 목
+        val voteEndAt = voteStartAt.plus(2, ChronoUnit.DAYS) // 토
+        val scheduleStartAt = voteStartAt.plus(4, ChronoUnit.DAYS) // 월
+        val scheduleEndAt = voteStartAt.plus(17, ChronoUnit.DAYS) // 일
 
-        val poll = Poll.of(
-            title = "투표 기한: ${voteEndDate} 18시",
-            description = "모각코 예정 기간: ${scheduleStartDate} ~ ${scheduleEndDate}",
-            startAt = voteStartDate.atStartOfDay(zoneId).toInstant(),
-            endAt = voteEndDate.atStartOfDay(zoneId).toInstant(),
-            pollStatus = PollStatus.OPEN
-        )
+        val poll = Poll.of(voteStartAt, voteEndAt, scheduleStartAt, scheduleEndAt)
         pollRepository.save(poll)
+
         applicationEventPublisher.publishEvent(
             PollGeneratedEvent.of(
                 poll.id!!,
-                scheduleStartDate.atStartOfDay(zoneId).toInstant(),
-                scheduleEndDate.atStartOfDay(zoneId).toInstant()
+                scheduleStartAt,
+                scheduleEndAt
             )
         )
+
         return poll
     }
 

@@ -1,6 +1,9 @@
 package com.example.antserver.domain.participation
 
 import com.example.antserver.domain.AggregateRoot
+import com.example.antserver.domain.schedule.Schedule
+import com.example.antserver.util.exception.ApplicationException
+import com.example.antserver.util.response.Status
 import jakarta.persistence.*
 import java.util.*
 
@@ -25,16 +28,14 @@ data class Participation(
 ): AggregateRoot() {
 
     companion object {
-
-        fun of(userId: UUID,
-               scheduleId: Long,
-               participationType:
-               ParticipationType): Participation {
-            return Participation(
-                userId = userId,
-                scheduleId = scheduleId,
-                participationType = participationType
-            )
+        fun from(schedule: Schedule): List<Participation> {
+            return schedule.voters.map { voter ->
+                Participation(
+                    scheduleId = schedule.id ?: throw ApplicationException(Status.ServerError, "Schedule id is null", ""),
+                    userId = voter.key,
+                    participationType = ParticipationType.STUDY
+                )
+            }
         }
     }
 }

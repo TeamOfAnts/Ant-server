@@ -3,6 +3,7 @@ package com.example.antserver.domain.poll
 import com.example.antserver.domain.AggregateRoot
 import jakarta.persistence.*
 import java.time.Instant
+import java.time.ZoneId
 
 @Entity
 @Table(name = "poll")
@@ -30,17 +31,25 @@ data class Poll(
 
     ): AggregateRoot() {
         companion object {
-            fun of(title: String,
-                   description: String,
-                   startAt: Instant,
-                   endAt: Instant,
-                   pollStatus: PollStatus): Poll {
+            fun of(
+                   voteStartAt: Instant,
+                   voteEndAt: Instant,
+                   scheduleStartAt: Instant,
+                   scheduleEndAt: Instant,
+                   id: Long? = null): Poll {
+                val seoulZoneId = ZoneId.of("Asia/Seoul")
+                val voteEndDate = voteEndAt.atZone(seoulZoneId).toLocalDate()
+                val scheduleStartAt = scheduleStartAt.atZone(seoulZoneId).toLocalDate()
+                val scheduleEndAt = scheduleEndAt.atZone(seoulZoneId).toLocalDate()
+
                 return Poll(
-                    title = title,
-                    description = description,
-                    startAt = startAt,
-                    endAt = endAt,
-                    pollStatus = pollStatus)
+                    id = id,
+                    title = "투표 기한: ${voteEndDate} 18시",
+                    description = "모각코 예정 기간: ${scheduleStartAt} ~ ${scheduleEndAt}",
+                    startAt = voteStartAt,
+                    endAt = voteEndAt,
+                    pollStatus = PollStatus.OPEN
+                )
             }
         }
 

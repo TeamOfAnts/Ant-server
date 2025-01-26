@@ -5,6 +5,7 @@ import com.example.antserver.domain.user.User
 import com.example.antserver.infrastructure.schedule.ScheduleOnConverter
 import jakarta.persistence.*
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 @Entity
@@ -20,36 +21,55 @@ data class Schedule(
 
     @Convert(converter = ScheduleOnConverter::class)
     @Column(name = "schedule_on")
-    val scheduleOn: ScheduleOn,
+    var scheduleOn: ScheduleOn = ScheduleOn.Unscheduled,
 
     @ElementCollection
     @Column(name = "voters")
-    val voters: MutableMap<UUID, String>,
+    val voters: MutableMap<UUID, String> = mutableMapOf(),
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    val scheduleStatus: ScheduleStatus
+    val scheduleStatus: ScheduleStatus = ScheduleStatus.VOTING
 ): AggregateRoot() {
 
     companion object {
-
-        fun of(pollId: Long,
-               scheduleOn: ScheduleOn,
-               scheduleStatus: ScheduleStatus): Schedule {
-            return Schedule(
-                pollId = pollId,
-                scheduleOn = scheduleOn,
-                voters = mutableMapOf(),
-                scheduleStatus = scheduleStatus)
+        fun ofSchedules(pollId: Long, startDate: Instant, daysWithUnscheduled: Long): List<Schedule> {
+            val schedules = mutableListOf<Schedule>()
+            (0 until daysWithUnscheduled + 1).map { days ->
+                val scheduleOn = if (days < daysWithUnscheduled) {
+                    ScheduleOn.Scheduled(
+                        startDate.plus(1, ChronoUnit.DAYS)
+                    )
+                } else {
+                    ScheduleOn.Unscheduled
+                }
+                schedules.add(
+                    Schedule(
+                        pollId = pollId,
+                        scheduleOn = scheduleOn
+                    )
+                )
+            }
+            return schedules
         }
     }
 
-    fun addVoter(voter: User) {
-        voters[voter.id] = voter.name
+    fun updateStatus(): Schedule {
+        return copy(scheduleStatus =
+            if (voters.size >= 3) ScheduleStatus.CONFIRMED
+            else ScheduleStatus.DROPPED)
     }
 
-    fun deleteVoter(voter: User) {
-        voters.remove(voter.id)
+    fun addVoter(voter: User): Schedule {
+        return copy(voters = voters.toMutableMap().apply {
+            put(voter.id, voter.name)
+        })
+    }
+
+    fun deleteVoter(voter: User): Schedule {
+        return copy(voters = voters.toMutableMap().apply {
+            remove(voter.id)
+        })
     }
 }
 

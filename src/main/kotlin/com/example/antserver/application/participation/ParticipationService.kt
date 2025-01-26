@@ -3,10 +3,6 @@ package com.example.antserver.application.participation
 import com.example.antserver.application.schedule.ScheduleConfirmedEvent
 import com.example.antserver.domain.participation.Participation
 import com.example.antserver.domain.participation.ParticipationRepository
-import com.example.antserver.domain.participation.ParticipationType
-import com.example.antserver.util.exception.ApplicationException
-import com.example.antserver.util.response.Status
-import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
@@ -20,18 +16,10 @@ class ParticipationService(
     }
 
     @Transactional
-    @EventListener
     fun saveParticipation(event: ScheduleConfirmedEvent): List<Participation> {
         val participations = event.confirmedSchedules.flatMap { schedule ->
-            schedule.voters.map { voter ->
-                Participation.of(
-                    scheduleId = schedule.id ?: throw ApplicationException(Status.ServerError, "Schedule id is null", ""),
-                    userId = voter.key,
-                    participationType = ParticipationType.STUDY
-                )
-            }
+            Participation.from(schedule)
         }
-
         return participationRepository.saveAll(participations)
     }
 }
