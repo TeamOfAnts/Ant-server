@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.test.annotation.DirtiesContext
-import org.springframework.test.context.TestPropertySource
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import kotlin.test.Test
@@ -69,8 +68,8 @@ class ParticipationServiceTest {
         )
         pollRepository.save(poll)
 
-        val daysWithUnscheduled = ChronoUnit.DAYS.between(scheduleStartAt, scheduleEndAt) + 1
-        val schedules = Schedule.ofSchedules(1L, Instant.now(), daysWithUnscheduled)
+        val daysWithUnscheduled = (ChronoUnit.DAYS.between(scheduleStartAt, scheduleEndAt) + 1) + 1
+        val schedules = Schedule.ofSchedules(1L, scheduleStartAt, daysWithUnscheduled)
         scheduleRepository.saveAll(schedules)
 
         scheduleService.voteSchedules(user1.id, listOf(1L, 2L, 3L))

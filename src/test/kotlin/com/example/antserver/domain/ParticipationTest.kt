@@ -25,7 +25,7 @@ class ParticipationTest {
         val voteStartDate = LocalDate.now()
         val scheduleStartDate = voteStartDate.plusDays(4)
         val scheduleEndDate = voteStartDate.plusDays(17)
-        val daysWithUnscheduled = ChronoUnit.DAYS.between(scheduleStartDate, scheduleEndDate) + 1
+        val daysWithUnscheduled = (ChronoUnit.DAYS.between(scheduleStartDate, scheduleEndDate) + 1) + 1
         val schedules = Schedule.ofSchedules(1L, Instant.now(), daysWithUnscheduled)
 
         // 1, 2, 3번 스케쥴은 3표 이상이므로 CONFIRMED, 4, 5, 6, 7번은 DROPPED
@@ -49,7 +49,7 @@ class ParticipationTest {
 
         // then
         val participationsWithVoters = participations
-            .flatten() // 이중 리스트를 단일 리스트로 변환
+            .flatten()
             .filter { it.scheduleId in listOf(1L, 2L, 3L) }
         participationsWithVoters.forEach { participation ->
             assertThat(participation.userId).isIn(listOf(user1.id, user2.id, user3.id))

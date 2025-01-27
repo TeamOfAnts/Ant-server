@@ -24,7 +24,7 @@ data class Schedule(
 
     @Convert(converter = ScheduleOnConverter::class)
     @Column(name = "schedule_on")
-    var scheduleOn: ScheduleOn = ScheduleOn.Unscheduled,
+    var scheduleOn: ScheduleOn,
 
     @ElementCollection
     @Column(name = "voters")

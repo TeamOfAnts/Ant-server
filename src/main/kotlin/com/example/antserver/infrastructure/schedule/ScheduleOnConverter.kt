@@ -21,9 +21,20 @@ class ScheduleOnConverter : AttributeConverter<ScheduleOn, String> {
         } else {
             val parts = dbData.split(" ")
             val date = LocalDate.parse(parts[0])
-            val dayOfWeek = DayOfWeek.valueOf(parts[1])
+            val dayOfWeekKorean = parts[1].removeSurrounding("(", ")")
+            val dayOfWeek = koreanToEnglish[dayOfWeekKorean]!!
             val timeOfDay = parts.getOrNull(2)
             ScheduleOn.Scheduled(date, dayOfWeek, timeOfDay)
         }
     }
+
+    private val koreanToEnglish = mapOf(
+        "월" to DayOfWeek.MONDAY,
+        "화" to DayOfWeek.TUESDAY,
+        "수" to DayOfWeek.WEDNESDAY,
+        "목" to DayOfWeek.THURSDAY,
+        "금" to DayOfWeek.FRIDAY,
+        "토" to DayOfWeek.SATURDAY,
+        "일" to DayOfWeek.SUNDAY
+    )
 }
