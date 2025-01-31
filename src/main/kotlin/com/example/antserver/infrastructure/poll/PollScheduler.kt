@@ -4,8 +4,6 @@ import com.example.antserver.application.poll.PollService
 import com.example.antserver.application.schedule.ScheduleService
 import com.example.antserver.domain.poll.PollRepository
 import com.example.antserver.domain.poll.PollStatus
-import com.example.antserver.util.exception.ApplicationException
-import com.example.antserver.util.response.Status
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.time.Clock
@@ -19,24 +17,26 @@ class PollScheduler(
     private val scheduleService: ScheduleService,
     private val clock: Clock
     ) {
-    private val lastPoll = pollRepository.findLast()
-    private val lastPollDate = lastPoll?.createdAt
 
     @Scheduled(cron = "0 0 18 ? * Thu", zone = "Asia/Seoul")
     fun startPoll() {
+        val lastPoll = pollRepository.findLast()
+        val lastPollDate = lastPoll?.startAt
         val today = Instant.now(clock)
 
-        if (lastPollDate == null || ChronoUnit.WEEKS.between(lastPollDate, today) >= 2) {
+        if (lastPollDate == null || ChronoUnit.DAYS.between(lastPollDate, today) == 14L) {
             pollService.generatePoll()
         }
     }
 
     @Scheduled(cron = "0 0 18 ? * Sat", zone = "Asia/Seoul")
     fun endPoll() {
+        val lastPoll = pollRepository.findLast()
+        val lastPollDate = lastPoll?.startAt
         val lastPollId = lastPoll?.id!!
         val today = Instant.now(clock)
 
-        if (ChronoUnit.DAYS.between(lastPollDate, today) == 1L) {
+        if (ChronoUnit.DAYS.between(lastPollDate, today) == 2L) {
             pollService.updatePollStatus(lastPollId, PollStatus.CLOSED)
             scheduleService.updateScheduleStatus(lastPollId)
         }
