@@ -28,11 +28,11 @@ class PollService(
         val scheduleEndAt = voteStartAt.plus(17, ChronoUnit.DAYS) // 일
 
         val poll = Poll.of(voteStartAt, voteEndAt, scheduleStartAt, scheduleEndAt)
-        pollRepository.save(poll)
+        val savedPoll = pollRepository.save(poll)
 
         applicationEventPublisher.publishEvent(
             PollGeneratedEvent.of(
-                poll.id!!,
+                savedPoll.id!!,
                 scheduleStartAt,
                 scheduleEndAt
             )

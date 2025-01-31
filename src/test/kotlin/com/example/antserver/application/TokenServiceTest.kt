@@ -5,7 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.example.antserver.application.auth.TokenService
 import com.example.antserver.domain.auth.RefreshToken
 import com.example.antserver.fake.FakeRefreshTokenRepository
-import com.example.antserver.testconfig.TestConfig
+import com.example.antserver.testconfig.TestRepositoryConfig
 import com.example.antserver.util.exception.AuthenticationException
 import com.example.antserver.util.security.jwt.JwtProperties
 import com.example.antserver.util.security.jwt.JwtTokenManager
@@ -21,8 +21,8 @@ import org.springframework.context.annotation.Import
 import org.testcontainers.shaded.com.google.common.net.HttpHeaders
 import java.util.*
 
-@SpringBootTest
-@Import(TestConfig::class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Import(TestRepositoryConfig::class)
 class TokenServiceTest {
     @Autowired
     private lateinit var fakeRefreshTokenRepository: FakeRefreshTokenRepository

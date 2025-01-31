@@ -16,14 +16,14 @@ spring:
 
 oauth:
   google:
-    client-id:
-    client-secret:
+    client-id: ${GOOGLE_CLIENT_ID}
+    client-secret: ${GOOGLE_CLIENT_SECRET}
     redirect-uri: http://localhost:8888/auth/callback?provider=google
     token-url: https://oauth2.googleapis.com/token
     userinfo-url: https://oauth2.googleapis.com/tokeninfo?id_token={idToken}
 
 jwt:
-  secret:
+  secret: ${JWT_SECRET}
   expiration-time:
     access: 3600000 # 1시간 (1000 * 60 * 60)
     refresh: 7779600000 # 90일 (1000 * 60 * 60 * 24 * 90)
