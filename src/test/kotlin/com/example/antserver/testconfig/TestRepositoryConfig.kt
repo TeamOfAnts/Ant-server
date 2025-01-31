@@ -6,24 +6,24 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Primary
 
 @TestConfiguration
-class TestConfig {
-    @Primary
+class TestRepositoryConfig {
     @Bean
+    @Primary
     fun fakeUserRepository() = FakeUserRepository()
 
-    @Primary
     @Bean
+    @Primary
     fun refreshTokenRepository() = FakeRefreshTokenRepository()
 
-    @Primary
     @Bean
+    @Primary
     fun fakePollRepository() = FakePollRepository()
 
-    @Primary
     @Bean
+    @Primary
     fun fakeScheduleRepository() = FakeScheduleRepository()
 
-    @Primary
     @Bean
+    @Primary
     fun fakeParticipationRepository() = FakeParticipationRepository()
 }
