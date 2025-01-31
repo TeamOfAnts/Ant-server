@@ -1,6 +1,7 @@
 package com.example.antserver.application
 
 import com.example.antserver.application.participation.ParticipationService
+import com.example.antserver.application.poll.PollService
 import com.example.antserver.application.schedule.ScheduleService
 import com.example.antserver.domain.poll.Poll
 import com.example.antserver.domain.schedule.Schedule
@@ -10,24 +11,20 @@ import com.example.antserver.domain.user.UserRoleType
 import com.example.antserver.fake.FakePollRepository
 import com.example.antserver.fake.FakeScheduleRepository
 import com.example.antserver.fake.FakeUserRepository
-import com.example.antserver.testconfig.TestConfig
+import com.example.antserver.testconfig.TestRepositoryConfig
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.junit.jupiter.MockitoExtension
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
-import org.springframework.test.annotation.DirtiesContext
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import kotlin.test.Test
 
-@Import(TestConfig::class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ExtendWith(MockitoExtension::class)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@Import(TestRepositoryConfig::class)
+@SpringBootTest
 class ParticipationServiceTest {
+
     @Autowired
     private lateinit var userRepository: FakeUserRepository
 

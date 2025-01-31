@@ -4,7 +4,7 @@ import com.example.antserver.application.poll.PollService
 import com.example.antserver.domain.poll.Poll
 import com.example.antserver.domain.poll.PollStatus
 import com.example.antserver.fake.FakePollRepository
-import com.example.antserver.testconfig.TestConfig
+import com.example.antserver.testconfig.TestRepositoryConfig
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -12,15 +12,12 @@ import org.junit.jupiter.api.DisplayName
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
-import org.springframework.test.annotation.DirtiesContext
-import org.springframework.test.context.TestPropertySource
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import kotlin.test.Test
 
-@Import(TestConfig::class)
+@Import(TestRepositoryConfig::class)
 @SpringBootTest
-//@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class PollServiceTest {
 
     @Autowired

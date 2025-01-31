@@ -11,7 +11,7 @@ import com.example.antserver.domain.user.User
 import com.example.antserver.domain.user.UserRoleType
 import com.example.antserver.fake.FakePollRepository
 import com.example.antserver.fake.FakeScheduleRepository
-import com.example.antserver.testconfig.TestConfig
+import com.example.antserver.testconfig.TestRepositoryConfig
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
 import org.mockito.BDDMockito.given
@@ -19,15 +19,13 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.Import
-import org.springframework.test.annotation.DirtiesContext
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import kotlin.test.Test
 
-@Import(TestConfig::class)
+@Import(TestRepositoryConfig::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class ScheduleServiceTest {
 
     @Autowired

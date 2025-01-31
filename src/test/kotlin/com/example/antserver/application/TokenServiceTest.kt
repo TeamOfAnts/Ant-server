@@ -5,7 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.example.antserver.application.auth.TokenService
 import com.example.antserver.domain.auth.RefreshToken
 import com.example.antserver.fake.FakeRefreshTokenRepository
-import com.example.antserver.testconfig.TestConfig
+import com.example.antserver.testconfig.TestRepositoryConfig
 import com.example.antserver.util.exception.AuthenticationException
 import com.example.antserver.util.security.jwt.JwtProperties
 import com.example.antserver.util.security.jwt.JwtTokenManager
@@ -18,14 +18,11 @@ import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
-import org.springframework.test.annotation.DirtiesContext
-import org.springframework.test.context.TestPropertySource
 import org.testcontainers.shaded.com.google.common.net.HttpHeaders
 import java.util.*
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import(TestConfig::class)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@Import(TestRepositoryConfig::class)
 class TokenServiceTest {
     @Autowired
     private lateinit var fakeRefreshTokenRepository: FakeRefreshTokenRepository
