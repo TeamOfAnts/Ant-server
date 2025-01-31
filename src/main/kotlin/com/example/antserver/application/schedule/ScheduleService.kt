@@ -20,11 +20,11 @@ class ScheduleService(
     private val userService: UserService,
     ) {
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional
     fun generateSchedules(event: PollGeneratedEvent): List<Schedule> {
         val startDate = event.scheduleStartAt
         val endDate = event.scheduleEndAt
-        val daysWithUnscheduled = ChronoUnit.DAYS.between(startDate, endDate) + 1
+        val daysWithUnscheduled = (ChronoUnit.DAYS.between(startDate, endDate) + 1) + 1
 
         val schedules = Schedule.ofSchedules(event.pollId, startDate, daysWithUnscheduled)
 
@@ -47,6 +47,7 @@ class ScheduleService(
     @Transactional
     fun voteSchedules(userId: UUID, selectedScheduleIds: List<Long>): List<Schedule> {
         val voter = userService.findUser(userId)
+        println("Finding user: $voter")
         val pollId = findPollIdByScheduleId(selectedScheduleIds.first())
         val totalSchedules = findSchedulesByPollId(pollId)
         val updatedSchedules = totalSchedules.map { schedule ->

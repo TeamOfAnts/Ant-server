@@ -14,9 +14,8 @@ data class ScheduleResponse(
 ) {
     companion object {
         fun of(schedule: Schedule): ScheduleResponse {
-            val zoneId = ZoneId.of("Asia/Seoul")
             val scheduleOn = when (val localDate = schedule.scheduleOn) {
-                is ScheduleOn.Scheduled -> localDate.schedule.atZone(zoneId).toLocalDate()
+                is ScheduleOn.Scheduled -> localDate.toString()
                 is ScheduleOn.Unscheduled -> "미참여"
             }
             return ScheduleResponse(

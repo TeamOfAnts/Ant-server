@@ -6,7 +6,7 @@ import com.fasterxml.uuid.Generators
 import java.util.*
 
 class FakeRefreshTokenRepository: RefreshTokenRepository {
-     val data: MutableList<RefreshToken> = mutableListOf()
+     private val data: MutableList<RefreshToken> = mutableListOf()
 
     override fun save(refreshToken: RefreshToken): RefreshToken {
         val existingIndex = data.indexOfFirst { it.id == refreshToken.id }

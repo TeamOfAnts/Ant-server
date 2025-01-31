@@ -1,4 +1,4 @@
-package com.example.antserver
+package com.example.antserver.testconfig
 
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
@@ -7,7 +7,7 @@ import org.testcontainers.containers.MySQLContainer
 import org.testcontainers.utility.DockerImageName
 
 @TestConfiguration(proxyBeanMethods = false)
-class TestcontainersConfiguration {
+class TestcontainersConfig {
 
     @Bean
     @ServiceConnection

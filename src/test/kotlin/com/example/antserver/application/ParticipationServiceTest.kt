@@ -1,6 +1,7 @@
 package com.example.antserver.application
 
 import com.example.antserver.application.participation.ParticipationService
+import com.example.antserver.application.poll.PollService
 import com.example.antserver.application.schedule.ScheduleService
 import com.example.antserver.domain.poll.Poll
 import com.example.antserver.domain.schedule.Schedule
@@ -10,11 +11,9 @@ import com.example.antserver.domain.user.UserRoleType
 import com.example.antserver.fake.FakePollRepository
 import com.example.antserver.fake.FakeScheduleRepository
 import com.example.antserver.fake.FakeUserRepository
-import com.example.antserver.testconfig.TestConfig
+import com.example.antserver.testconfig.TestRepositoryConfig
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.junit.jupiter.MockitoExtension
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
@@ -22,10 +21,10 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 import kotlin.test.Test
 
-@Import(TestConfig::class)
+@Import(TestRepositoryConfig::class)
 @SpringBootTest
-@ExtendWith(MockitoExtension::class)
 class ParticipationServiceTest {
+
     @Autowired
     private lateinit var userRepository: FakeUserRepository
 
@@ -40,20 +39,6 @@ class ParticipationServiceTest {
 
     @Autowired
     private lateinit var participationService: ParticipationService
-
-
-//    private lateinit var pollService: PollService
-//    private lateinit var scheduleService: ScheduleService
-//    private lateinit var participationService: ParticipationService
-
-//    @BeforeEach
-//    fun setup() {
-////        MockitoAnnotations.openMocks(this)
-//        userRepository.clear()
-////        pollService = PollService(pollRepository, applicationEventPublisher)
-////        scheduleService = ScheduleService(scheduleRepository, applicationEventPublisher, userService)
-////        participationService = ParticipationService(participationRepository)
-//    }
 
     @Test
     @DisplayName("스케쥴 확정 시 participation이 저장된다")
@@ -80,8 +65,8 @@ class ParticipationServiceTest {
         )
         pollRepository.save(poll)
 
-        val daysWithUnscheduled = ChronoUnit.DAYS.between(scheduleStartAt, scheduleEndAt) + 1
-        val schedules = Schedule.ofSchedules(1L, Instant.now(), daysWithUnscheduled)
+        val daysWithUnscheduled = (ChronoUnit.DAYS.between(scheduleStartAt, scheduleEndAt) + 1) + 1
+        val schedules = Schedule.ofSchedules(1L, scheduleStartAt, daysWithUnscheduled)
         scheduleRepository.saveAll(schedules)
 
         scheduleService.voteSchedules(user1.id, listOf(1L, 2L, 3L))

@@ -20,6 +20,7 @@ class PollTest {
         val scheduleStartAt = voteStartAt.plus(4, ChronoUnit.DAYS)
         val scheduleEndAt = voteStartAt.plus(17, ChronoUnit.DAYS)
 
+        // when
         val poll = Poll.of(
             id = 1L,
             voteStartAt = voteStartAt,

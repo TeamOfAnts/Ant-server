@@ -7,7 +7,7 @@ import com.fasterxml.uuid.Generators
 import java.util.*
 
 class FakeUserRepository: UserRepository {
-     val data: MutableList<User> = mutableListOf()
+    private val data: MutableList<User> = mutableListOf()
 
     override fun save(user: User): User {
         val existingIndex = data.indexOfFirst { it.id == user.id }
