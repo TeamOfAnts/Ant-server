@@ -4,8 +4,6 @@ spring:
       enabled: false
   jpa:
     open-in-view: false
-    hibernate:
-      ddl-auto: none
   autoconfigure:
     exclude:
      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
