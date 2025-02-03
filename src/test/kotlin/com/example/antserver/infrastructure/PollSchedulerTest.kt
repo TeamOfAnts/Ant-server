@@ -24,7 +24,7 @@ import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import kotlin.test.Test
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @Import(TestClockConfig::class,TestRepositoryConfig::class)
 class PollSchedulerTest {
     
