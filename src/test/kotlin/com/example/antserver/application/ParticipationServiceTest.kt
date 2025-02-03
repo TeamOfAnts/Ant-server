@@ -1,7 +1,6 @@
 package com.example.antserver.application
 
 import com.example.antserver.application.participation.ParticipationService
-import com.example.antserver.application.poll.PollService
 import com.example.antserver.application.schedule.ScheduleService
 import com.example.antserver.domain.poll.Poll
 import com.example.antserver.domain.schedule.Schedule

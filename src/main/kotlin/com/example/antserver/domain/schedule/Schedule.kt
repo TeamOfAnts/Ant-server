@@ -3,6 +3,7 @@ package com.example.antserver.domain.schedule
 import com.example.antserver.domain.AggregateRoot
 import com.example.antserver.domain.user.User
 import com.example.antserver.infrastructure.schedule.ScheduleOnConverter
+import com.example.antserver.infrastructure.schedule.ScheduleDescriptionConverter
 import jakarta.persistence.*
 import java.time.DayOfWeek
 import java.time.Instant
@@ -26,6 +27,10 @@ data class Schedule(
     @Column(name = "schedule_on")
     var scheduleOn: ScheduleOn,
 
+    @Convert(converter = ScheduleDescriptionConverter::class)
+    @Column(name = "description")
+    var description: ScheduleDescription,
+
     @ElementCollection
     @Column(name = "voters")
     val voters: MutableMap<UUID, String> = mutableMapOf(),
@@ -47,14 +52,26 @@ data class Schedule(
                 schedules.addAll(
                     when {
                         day < daysWithUnscheduled - 1 && (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) -> listOf(
-                            Schedule(pollId = pollId, scheduleOn = ScheduleOn.Scheduled(currentDate, dayOfWeek, "낮")),
-                            Schedule(pollId = pollId, scheduleOn = ScheduleOn.Scheduled(currentDate, dayOfWeek, "저녁"))
+                            Schedule(
+                                pollId = pollId,
+                                scheduleOn = ScheduleOn.Scheduled(currentDate),
+                                description = ScheduleDescription.Scheduled(currentDate, dayOfWeek, "낮")),
+                            Schedule(
+                                pollId = pollId,
+                                scheduleOn = ScheduleOn.Scheduled(currentDate),
+                                description = ScheduleDescription.Scheduled(currentDate, dayOfWeek, "저녁"))
                         )
                         day < daysWithUnscheduled - 1 -> listOf(
-                            Schedule(pollId = pollId, scheduleOn = ScheduleOn.Scheduled(currentDate, dayOfWeek))
+                            Schedule(
+                                pollId = pollId,
+                                scheduleOn = ScheduleOn.Scheduled(currentDate),
+                                description = ScheduleDescription.Scheduled(currentDate, dayOfWeek))
                         )
                         else -> listOf(
-                            Schedule(pollId = pollId, scheduleOn = ScheduleOn.Unscheduled)
+                            Schedule(
+                                pollId = pollId,
+                                scheduleOn = ScheduleOn.Unscheduled,
+                                description = ScheduleDescription.Unscheduled)
                         )
                     }
                 )
@@ -84,6 +101,14 @@ data class Schedule(
 
 @Embeddable
 sealed class ScheduleOn {
+    data class Scheduled(
+        val date: LocalDate) : ScheduleOn()
+
+    data object Unscheduled : ScheduleOn()
+}
+
+@Embeddable
+sealed class ScheduleDescription {
     abstract override fun toString(): String
 
     companion object {
@@ -104,7 +129,7 @@ sealed class ScheduleOn {
     data class Scheduled(
         val date: LocalDate,
         val dayOfWeek: DayOfWeek,
-        val timeOfDay: String? = null) : ScheduleOn() {
+        val timeOfDay: String? = null) : ScheduleDescription() {
             override fun toString(): String {
                 return listOfNotNull(
                     date.toString(),
@@ -114,5 +139,5 @@ sealed class ScheduleOn {
             }
         }
 
-    data object Unscheduled : ScheduleOn()
+    data object Unscheduled : ScheduleDescription()
 }
