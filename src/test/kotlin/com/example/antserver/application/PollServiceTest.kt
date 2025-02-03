@@ -17,7 +17,7 @@ import java.time.temporal.ChronoUnit
 import kotlin.test.Test
 
 @Import(TestRepositoryConfig::class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@SpringBootTest
 class PollServiceTest {
 
     @Autowired

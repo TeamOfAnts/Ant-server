@@ -21,7 +21,7 @@ import org.springframework.context.annotation.Import
 import org.testcontainers.shaded.com.google.common.net.HttpHeaders
 import java.util.*
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@SpringBootTest
 @Import(TestRepositoryConfig::class)
 class TokenServiceTest {
     @Autowired
