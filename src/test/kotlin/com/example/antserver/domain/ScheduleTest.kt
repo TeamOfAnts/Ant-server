@@ -1,6 +1,7 @@
 package com.example.antserver.domain
 
 import com.example.antserver.domain.schedule.Schedule
+import com.example.antserver.domain.schedule.ScheduleDescription
 import com.example.antserver.domain.schedule.ScheduleOn
 import com.example.antserver.domain.schedule.ScheduleStatus
 import com.example.antserver.domain.user.ProviderType
@@ -30,9 +31,12 @@ class ScheduleTest {
 
         // then
         assertThat(schedules.size).isEqualTo(19)
-        assertThat(schedules[0].scheduleOn).isEqualTo(ScheduleOn.Scheduled(startDate, startDayOfWeek))
-        assertThat(schedules[5].scheduleOn).isEqualTo(ScheduleOn.Scheduled(startDate.plusDays(5), startDayOfWeek.plus(5), "낮"))
+        assertThat(schedules[0].scheduleOn).isEqualTo(ScheduleOn.Scheduled(startDate))
+        assertThat(schedules[0].description).isEqualTo(ScheduleDescription.Scheduled(startDate, startDayOfWeek))
+        assertThat(schedules[5].scheduleOn).isEqualTo(ScheduleOn.Scheduled(startDate.plusDays(5)))
+        assertThat(schedules[5].description).isEqualTo(ScheduleDescription.Scheduled(startDate.plusDays(5), startDayOfWeek.plus(5), "낮"))
         assertThat(schedules[18].scheduleOn).isEqualTo(ScheduleOn.Unscheduled)
+        assertThat(schedules[18].description).isEqualTo(ScheduleDescription.Unscheduled)
     }
 
     @Test

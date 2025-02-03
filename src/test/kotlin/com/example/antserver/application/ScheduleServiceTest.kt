@@ -4,6 +4,7 @@ import com.example.antserver.application.schedule.ScheduleService
 import com.example.antserver.application.user.UserService
 import com.example.antserver.domain.poll.Poll
 import com.example.antserver.domain.schedule.Schedule
+import com.example.antserver.domain.schedule.ScheduleDescription
 import com.example.antserver.domain.schedule.ScheduleOn
 import com.example.antserver.domain.schedule.ScheduleStatus
 import com.example.antserver.domain.user.ProviderType
@@ -84,9 +85,9 @@ class ScheduleServiceTest {
 
         // then
         assertThat(schedules).hasSize(19)
-        assertThat(schedules[0].scheduleOn).isEqualTo(ScheduleOn.Scheduled(scheduleStartDate, scheduleStartDay))
-        assertThat(schedules[5].scheduleOn).isEqualTo(ScheduleOn.Scheduled(scheduleStartDate.plusDays(5), scheduleStartDay.plus(5), "낮"))
-        assertThat(schedules[18].scheduleOn).isEqualTo(ScheduleOn.Unscheduled)
+        assertThat(schedules[0].description).isEqualTo(ScheduleDescription.Scheduled(scheduleStartDate, scheduleStartDay))
+        assertThat(schedules[5].description).isEqualTo(ScheduleDescription.Scheduled(scheduleStartDate.plusDays(5), scheduleStartDay.plus(5), "낮"))
+        assertThat(schedules[18].description).isEqualTo(ScheduleDescription.Unscheduled)
         schedules.forEach { schedule ->
             assertThat(schedule.pollId).isEqualTo(poll.id)
             assertThat(schedule.scheduleStatus).isEqualTo(ScheduleStatus.VOTING)
