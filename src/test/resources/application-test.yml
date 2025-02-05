@@ -1,0 +1,14 @@
+spring:
+  task:
+    scheduling:
+      enabled: false
+  jpa:
+    open-in-view: false
+  autoconfigure:
+    exclude:
+     - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+     - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+     - org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration
+  test:
+    database:
+      replace: NONE
